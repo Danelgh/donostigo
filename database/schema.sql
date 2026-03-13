@@ -109,7 +109,7 @@ INSERT INTO businesses (user_id, category_id, name, description, address, phone)
   );
 
 INSERT INTO reservations (user_id, business_id, reservation_date, people, status) VALUES
-  (2, 1, '2026-03-20 10:00:00', 2, 'pending');
+  (2, 1, '2026-03-10 10:00:00', 2, 'confirmed');
 
 INSERT INTO reviews (user_id, business_id, rating, comment) VALUES
   (

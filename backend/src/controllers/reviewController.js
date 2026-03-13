@@ -44,13 +44,16 @@ export async function createBusinessReview(req, res) {
       `SELECT id
        FROM reservations
        WHERE user_id = $1 AND business_id = $2
+         AND status IN ('pending', 'confirmed')
+         AND reservation_date < NOW()
        LIMIT 1`,
       [req.user.id, businessId]
     );
 
     if (reservationResult.rows.length === 0) {
       return res.status(403).json({
-        message: "Solo puedes publicar una resena si has reservado antes en este negocio"
+        message:
+          "Solo puedes publicar una resena si ya has completado una reserva previa en este negocio"
       });
     }
 

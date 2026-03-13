@@ -15,7 +15,10 @@ async function parseResponse(response) {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, options);
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
+    ...options
+  });
   const data = await parseResponse(response);
 
   if (!response.ok) {
@@ -30,12 +33,11 @@ async function request(path, options = {}) {
   return data;
 }
 
-function buildJsonRequest(method, body, token) {
+function buildJsonRequest(method, body) {
   return {
     method,
     headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(body)
   };
@@ -57,30 +59,28 @@ export async function loginUser(payload) {
   return request("/auth/login", buildJsonRequest("POST", payload));
 }
 
-export async function fetchCurrentUser(token) {
-  return request("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+export async function fetchCurrentUser() {
+  return request("/auth/me");
+}
+
+export async function updateCurrentUser(payload) {
+  return request("/auth/me", buildJsonRequest("PATCH", payload));
+}
+
+export async function logoutUser() {
+  return request("/auth/logout", {
+    method: "POST"
   });
 }
 
-export async function updateCurrentUser(payload, token) {
-  return request("/auth/me", buildJsonRequest("PATCH", payload, token));
+export async function createReservation(payload) {
+  return request("/reservations", buildJsonRequest("POST", payload));
 }
 
-export async function createReservation(payload, token) {
-  return request("/reservations", buildJsonRequest("POST", payload, token));
+export async function fetchMyReservations() {
+  return request("/reservations/my");
 }
 
-export async function fetchMyReservations(token) {
-  return request("/reservations/my", {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-}
-
-export async function createBusinessReview(businessId, payload, token) {
-  return request(`/businesses/${businessId}/reviews`, buildJsonRequest("POST", payload, token));
+export async function createBusinessReview(businessId, payload) {
+  return request(`/businesses/${businessId}/reviews`, buildJsonRequest("POST", payload));
 }

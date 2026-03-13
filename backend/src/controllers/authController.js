@@ -4,6 +4,7 @@ import pool from "../config/db.js";
 import env from "../config/env.js";
 
 const allowedRoles = new Set(["user", "business"]);
+const SESSION_COOKIE_NAME = "donostigo_token";
 
 function normalizeEmail(email) {
   return email.trim().toLowerCase();
@@ -13,6 +14,38 @@ function createToken(user) {
   return jwt.sign({ id: user.id, email: user.email, role: user.role }, env.jwtSecret, {
     expiresIn: "7d"
   });
+}
+
+function setSessionCookie(res, token) {
+  const cookieParts = [
+    `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${60 * 60 * 24 * 7}`
+  ];
+
+  if (env.nodeEnv === "production") {
+    cookieParts.push("Secure");
+  }
+
+  res.setHeader("Set-Cookie", cookieParts.join("; "));
+}
+
+function clearSessionCookie(res) {
+  const cookieParts = [
+    `${SESSION_COOKIE_NAME}=`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    "Max-Age=0"
+  ];
+
+  if (env.nodeEnv === "production") {
+    cookieParts.push("Secure");
+  }
+
+  res.setHeader("Set-Cookie", cookieParts.join("; "));
 }
 
 function sanitizeUser(user) {
@@ -69,6 +102,10 @@ function normalizeOptionalUrl(value) {
 export async function register(req, res) {
   const { name, email, password, role = "user" } = req.body;
 
+  if (typeof name !== "string" || typeof email !== "string" || typeof password !== "string") {
+    return res.status(400).json({ message: "Los datos de registro no tienen un formato valido" });
+  }
+
   if (!name || !email || !password) {
     return res.status(400).json({ message: "Faltan campos obligatorios" });
   }
@@ -107,9 +144,12 @@ export async function register(req, res) {
 
     const user = sanitizeUser(result.rows[0]);
 
+    const token = createToken(user);
+    setSessionCookie(res, token);
+
     res.status(201).json({
       user,
-      token: createToken(user)
+      token
     });
   } catch (_error) {
     res.status(500).json({ message: "Error interno al registrar usuario" });
@@ -118,6 +158,10 @@ export async function register(req, res) {
 
 export async function login(req, res) {
   const { email, password } = req.body;
+
+  if (typeof email !== "string" || typeof password !== "string") {
+    return res.status(400).json({ message: "Los datos de acceso no tienen un formato valido" });
+  }
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email y password son obligatorios" });
@@ -143,9 +187,12 @@ export async function login(req, res) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
 
+    const token = createToken(user);
+    setSessionCookie(res, token);
+
     res.json({
       user: sanitizeUser(user),
-      token: createToken(user)
+      token
     });
   } catch (_error) {
     res.status(500).json({ message: "Error interno al iniciar sesion" });
@@ -172,6 +219,11 @@ export async function getCurrentUser(req, res) {
   } catch (_error) {
     res.status(500).json({ message: "Error interno al obtener la sesion" });
   }
+}
+
+export function logout(_req, res) {
+  clearSessionCookie(res);
+  res.json({ message: "Sesion cerrada correctamente" });
 }
 
 export async function updateCurrentUser(req, res) {

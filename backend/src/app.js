@@ -10,7 +10,8 @@ const app = express();
 app.disable("x-powered-by");
 app.use(
   cors({
-    origin: env.clientUrl
+    origin: env.clientUrl,
+    credentials: true
   })
 );
 app.use(express.json());

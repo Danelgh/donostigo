@@ -7,39 +7,17 @@ import LoginPage from "./pages/LoginPage.jsx";
 import MyReservationsPage from "./pages/MyReservationsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
-import { fetchCurrentUser } from "./services/api.js";
+import { fetchCurrentUser, logoutUser } from "./services/api.js";
 import { getBusinessInitials } from "./utils/businessTheme.js";
 
-const AUTH_STORAGE_KEY = "donostigo_auth";
-
-function loadStoredAuth() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    return storedValue ? JSON.parse(storedValue) : null;
-  } catch (_error) {
-    return null;
-  }
-}
-
 export default function App() {
-  const [storedAuth] = useState(loadStoredAuth);
   const [auth, setAuth] = useState(null);
-  const [isHydratingAuth, setIsHydratingAuth] = useState(Boolean(storedAuth?.token));
+  const [isHydratingAuth, setIsHydratingAuth] = useState(true);
 
   useEffect(() => {
-    if (!storedAuth?.token) {
-      setIsHydratingAuth(false);
-      return;
-    }
-
-    fetchCurrentUser(storedAuth.token)
+    fetchCurrentUser()
       .then((data) => {
         setAuth({
-          token: storedAuth.token,
           user: data.user
         });
       })
@@ -49,29 +27,22 @@ export default function App() {
       .finally(() => {
         setIsHydratingAuth(false);
       });
-  }, [storedAuth]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    if (auth) {
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
-      return;
-    }
-
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
-  }, [auth]);
+  }, []);
 
   function handleAuthSuccess(session) {
-    setAuth(session);
+    setAuth({ user: session.user });
     setIsHydratingAuth(false);
   }
 
-  function handleLogout() {
-    setAuth(null);
-    setIsHydratingAuth(false);
+  async function handleLogout() {
+    try {
+      await logoutUser();
+    } catch (_error) {
+      // Aunque falle la API, cerramos el estado local para no bloquear la interfaz.
+    } finally {
+      setAuth(null);
+      setIsHydratingAuth(false);
+    }
   }
 
   function handleUserUpdate(user) {

@@ -49,7 +49,7 @@ export default function ProfilePage({ auth, onUserUpdate }) {
     setErrorMessage("");
 
     try {
-      const response = await updateCurrentUser(formData, auth.token);
+      const response = await updateCurrentUser(formData);
       onUserUpdate(response.user);
       setSuccessMessage(response.message);
     } catch (error) {

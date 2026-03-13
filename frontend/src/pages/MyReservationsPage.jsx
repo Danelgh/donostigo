@@ -4,11 +4,11 @@ import { fetchMyReservations } from "../services/api.js";
 
 export default function MyReservationsPage({ auth }) {
   const [reservations, setReservations] = useState([]);
-  const [isLoading, setIsLoading] = useState(Boolean(auth?.token && auth.user.role === "user"));
+  const [isLoading, setIsLoading] = useState(Boolean(auth && auth.user.role === "user"));
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (!auth?.token || auth.user.role !== "user") {
+    if (!auth || auth.user.role !== "user") {
       setReservations([]);
       setIsLoading(false);
       return;
@@ -17,7 +17,7 @@ export default function MyReservationsPage({ auth }) {
     setIsLoading(true);
     setErrorMessage("");
 
-    fetchMyReservations(auth.token)
+    fetchMyReservations()
       .then((data) => {
         setReservations(data);
       })

@@ -40,8 +40,14 @@ export default function BusinessDetailPage({ auth }) {
   async function handleReservationSubmit(event) {
     event.preventDefault();
 
-    if (!auth?.token) {
+    if (!auth) {
       setReservationError("Debes iniciar sesion para crear una reserva.");
+      setReservationMessage("");
+      return;
+    }
+
+    if (auth.user.role !== "user") {
+      setReservationError("Solo las cuentas de usuario cliente pueden crear reservas.");
       setReservationMessage("");
       return;
     }
@@ -56,8 +62,7 @@ export default function BusinessDetailPage({ auth }) {
           businessId: business.id,
           reservationDate,
           people: Number(people)
-        },
-        auth.token
+        }
       );
 
       setReservationMessage("Reserva registrada correctamente.");
@@ -73,8 +78,14 @@ export default function BusinessDetailPage({ auth }) {
   async function handleReviewSubmit(event) {
     event.preventDefault();
 
-    if (!auth?.token) {
+    if (!auth) {
       setReviewError("Debes iniciar sesion para publicar una resena.");
+      setReviewMessage("");
+      return;
+    }
+
+    if (auth.user.role !== "user") {
+      setReviewError("Solo las cuentas de usuario cliente pueden publicar resenas.");
       setReviewMessage("");
       return;
     }
@@ -89,8 +100,7 @@ export default function BusinessDetailPage({ auth }) {
         {
           rating: Number(reviewRating),
           comment: reviewComment
-        },
-        auth.token
+        }
       );
 
       setReviewMessage(response.message);
