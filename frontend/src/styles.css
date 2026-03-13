@@ -186,6 +186,70 @@ img {
   padding: 1rem 2rem 3rem;
 }
 
+.site-footer {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 2rem 2.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.site-footer-copy {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.2rem 1.35rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow: 0 18px 30px rgba(22, 34, 52, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.site-footer-copy strong {
+  font-family: var(--heading-font);
+  font-size: 1.15rem;
+}
+
+.site-footer-copy p,
+.site-footer-logo-block span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.site-footer-logos {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.site-footer-logo-block {
+  display: grid;
+  gap: 0.55rem;
+  align-items: center;
+  justify-items: center;
+  min-width: 180px;
+  padding: 1rem 1.1rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(22, 34, 52, 0.08);
+}
+
+.site-footer-logo-block span {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.site-footer-logo-block img {
+  max-height: 48px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}
+
 .card,
 .hero {
   background: var(--surface);
@@ -316,9 +380,56 @@ button:disabled {
     rgba(255, 255, 255, 0.8);
 }
 
+.hero-photo {
+  width: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 24px;
+}
+
 .hero-visual img {
   width: 100%;
   border-radius: 24px;
+}
+
+.hero-local-card {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.1rem;
+  border-radius: 24px;
+  border: 1px solid rgba(22, 34, 52, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 18px 30px rgba(22, 34, 52, 0.06);
+}
+
+.hero-local-card img {
+  width: 100%;
+  max-width: 120px;
+}
+
+.hero-local-copy {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.hero-local-copy span {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-2);
+}
+
+.hero-local-copy strong {
+  font-family: var(--heading-font);
+  font-size: 1.1rem;
+}
+
+.hero-local-copy p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .hero-visual-badge {
@@ -604,20 +715,15 @@ button:disabled {
     #123b59;
 }
 
-.business-card[data-category="restauracion"] .business-card-media {
-  background: linear-gradient(145deg, #7d3b28, #d06a43);
-}
-
-.business-card[data-category="deporte"] .business-card-media {
-  background: linear-gradient(145deg, #123b59, #0f766e);
-}
-
-.business-card[data-category="bienestar"] .business-card-media {
-  background: linear-gradient(145deg, #6f5b90, #b692d1);
-}
-
-.business-card[data-category="ocio"] .business-card-media {
-  background: linear-gradient(145deg, #253861, #7d84df);
+.business-card-photo,
+.detail-poster-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: brightness(0.72) saturate(0.92);
 }
 
 .business-card-media::before,
@@ -629,6 +735,7 @@ button:disabled {
   height: 13rem;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.24), transparent 70%);
+  z-index: 1;
 }
 
 .business-card-media::after,
@@ -642,12 +749,14 @@ button:disabled {
   border-radius: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   transform: rotate(18deg);
+  z-index: 1;
 }
 
 .business-card-index {
   position: absolute;
   top: 1rem;
   left: 1rem;
+  z-index: 2;
   padding: 0.45rem 0.7rem;
   border-radius: 999px;
   font-size: 0.74rem;
@@ -660,7 +769,7 @@ button:disabled {
 .business-card-initials,
 .detail-poster-mark {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -798,7 +907,7 @@ button:disabled {
   display: grid;
   gap: 0.25rem;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .detail-layout {
@@ -1183,6 +1292,7 @@ button:disabled {
   .listing-hero,
   .listing-toolbar,
   .listing-feedback,
+  .site-footer,
   .reservation-hero,
   .profile-hero,
   .profile-layout,
@@ -1217,6 +1327,14 @@ button:disabled {
     padding: 1rem 1rem 2rem;
   }
 
+  .site-footer {
+    padding: 0 1rem 2rem;
+  }
+
+  .site-footer-logos {
+    justify-content: flex-start;
+  }
+
   .hero-copy h2,
   .detail-hero h2 {
     max-width: none;
@@ -1227,7 +1345,8 @@ button:disabled {
   .proof-grid,
   .detail-info-grid,
   .listing-summary,
-  .reservation-overview {
+  .reservation-overview,
+  .hero-local-card {
     grid-template-columns: 1fr;
   }
 

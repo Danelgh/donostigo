@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
+import logoPrometeo from "./assets/logo-prometeo.jpg";
+import logoThePowerFp from "./assets/logo-thepowerfp.png";
 import BusinessDetailPage from "./pages/BusinessDetailPage.jsx";
 import BusinessListPage from "./pages/BusinessListPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
@@ -150,6 +152,27 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+
+      <footer className="site-footer">
+        <div className="site-footer-copy">
+          <strong>DonostiGo</strong>
+          <p>
+            Proyecto academico desarrollado como Trabajo de Fin de Grado de Desarrollo de
+            Aplicaciones Web.
+          </p>
+        </div>
+
+        <div className="site-footer-logos">
+          <div className="site-footer-logo-block">
+            <span>Centro / programa</span>
+            <img src={logoThePowerFp} alt="Logo de ThePower FP" />
+          </div>
+          <div className="site-footer-logo-block">
+            <span>Entorno academico</span>
+            <img src={logoPrometeo} alt="Logo de Prometeo" />
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

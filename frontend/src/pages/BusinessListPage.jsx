@@ -1,7 +1,11 @@
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchBusinesses, fetchCategories } from "../services/api.js";
-import { getBusinessInitials, getCategoryKey } from "../utils/businessTheme.js";
+import {
+  getBusinessInitials,
+  getCategoryImage,
+  getCategoryKey
+} from "../utils/businessTheme.js";
 
 export default function BusinessListPage() {
   const [businesses, setBusinesses] = useState([]);
@@ -214,6 +218,11 @@ export default function BusinessListPage() {
             key={business.id}
           >
             <div className="business-card-media">
+              <img
+                className="business-card-photo"
+                src={getCategoryImage(business.category)}
+                alt={`Imagen representativa de ${business.category || "la categoria del negocio"}`}
+              />
               <span className="business-card-index">{String(business.id).padStart(2, "0")}</span>
               <div className="business-card-initials">{getBusinessInitials(business.name)}</div>
             </div>

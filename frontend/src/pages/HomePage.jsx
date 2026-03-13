@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import donostiaHero from "../assets/donostia-hero.jpg";
 import donostigoScene from "../assets/donostigo-scene.svg";
 
 export default function HomePage() {
@@ -25,11 +26,27 @@ export default function HomePage() {
         </div>
 
         <div className="hero-panel">
-          <div className="hero-visual card">
-            <img src={donostigoScene} alt="Ilustracion conceptual de DonostiGo" />
+          <div className="hero-visual card hero-photo-card">
+            <img
+              className="hero-photo"
+              src={donostiaHero}
+              alt="Vista panoramica de Donostia-San Sebastian"
+            />
             <div className="hero-visual-badge">
-              <span>Proyecto DonostiGo</span>
-              <strong>Catalogo de negocios y reservas</strong>
+              <span>Donostia-San Sebastian</span>
+              <strong>Negocios locales y reservas en un mismo entorno</strong>
+            </div>
+          </div>
+
+          <div className="hero-local-card">
+            <img src={donostigoScene} alt="Ilustracion conceptual de DonostiGo" />
+            <div className="hero-local-copy">
+              <span>Enfoque del proyecto</span>
+              <strong>Una propuesta digital centrada en el comercio local</strong>
+              <p>
+                La plataforma toma como referencia la ciudad de Donostia para reunir
+                negocios, categorias y reservas en una experiencia sencilla.
+              </p>
             </div>
           </div>
 

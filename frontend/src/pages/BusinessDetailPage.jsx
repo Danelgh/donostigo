@@ -6,7 +6,11 @@ import {
   fetchBusinessById
 } from "../services/api.js";
 import { buildGoogleMapsEmbedUrl, buildGoogleMapsSearchUrl } from "../utils/maps.js";
-import { getBusinessInitials, getCategoryKey } from "../utils/businessTheme.js";
+import {
+  getBusinessInitials,
+  getCategoryImage,
+  getCategoryKey
+} from "../utils/businessTheme.js";
 
 export default function BusinessDetailPage({ auth }) {
   const { id } = useParams();
@@ -135,6 +139,7 @@ export default function BusinessDetailPage({ auth }) {
   const reviewCount = Number(business.review_count || 0);
   const mapsEmbedUrl = buildGoogleMapsEmbedUrl(business.address);
   const mapsSearchUrl = buildGoogleMapsSearchUrl(business.address);
+  const posterImage = getCategoryImage(business.category);
 
   return (
     <section className="detail-page">
@@ -155,6 +160,11 @@ export default function BusinessDetailPage({ auth }) {
         </div>
 
         <div className="detail-poster">
+          <img
+            className="detail-poster-photo"
+            src={posterImage}
+            alt={`Imagen representativa de ${business.category || "la categoria del negocio"}`}
+          />
           <span className="detail-poster-mark">{getBusinessInitials(business.name)}</span>
           <div className="detail-poster-copy">
             <strong>{business.name}</strong>
