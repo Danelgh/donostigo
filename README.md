@@ -59,3 +59,40 @@ npm run dev
 
 - `surf@donostigo.local` / `Demo1234`
 - `ane@donostigo.local` / `Demo1234`
+
+## Despliegue recomendado en Render
+
+La forma mas comoda de compartir el proyecto como web publica es desplegarlo en Render:
+
+- `frontend/` como sitio estatico
+- `backend/` como servicio web
+- PostgreSQL como base de datos gestionada
+
+El repositorio ya incluye un archivo [`render.yaml`](./render.yaml) preparado para crear los tres servicios.
+
+### Pasos
+
+1. Sube el repositorio a GitHub y comprueba que los cambios estan actualizados.
+2. En Render, crea un nuevo servicio usando la opcion **Blueprint** y selecciona este repositorio.
+3. Espera a que se creen:
+   - `danelgh-donostigo-db`
+   - `danelgh-donostigo-api`
+   - `danelgh-donostigo-web`
+4. En la base de datos de Render, copia la **External Database URL**.
+5. Desde tu ordenador, carga el esquema y los datos demo:
+
+```bash
+psql "<EXTERNAL_DATABASE_URL>" -f database/schema.sql
+```
+
+6. Abre la URL del frontend y comprueba que:
+   - el catalogo carga correctamente
+   - el login funciona
+   - las reservas y resenas responden bien
+
+### Nota
+
+Si Render asigna una URL distinta a la prevista en `render.yaml`, actualiza estas variables en el panel de Render y vuelve a desplegar:
+
+- en el backend: `CLIENT_URL`
+- en el frontend: `VITE_API_URL`
