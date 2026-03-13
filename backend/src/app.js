@@ -6,11 +6,25 @@ import businessRoutes from "./routes/businessRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 
 const app = express();
+const allowedOrigins = new Set([env.clientUrl]);
+
+if (env.nodeEnv !== "production") {
+  allowedOrigins.add("http://localhost:5173");
+  allowedOrigins.add("http://localhost:5174");
+  allowedOrigins.add("http://127.0.0.1:5173");
+  allowedOrigins.add("http://127.0.0.1:5174");
+}
 
 app.disable("x-powered-by");
 app.use(
   cors({
-    origin: env.clientUrl,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origen no permitido por CORS"));
+    },
     credentials: true
   })
 );

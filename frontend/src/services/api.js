@@ -47,8 +47,20 @@ export async function fetchBusinesses() {
   return request("/businesses");
 }
 
+export async function fetchCategories() {
+  return request("/businesses/categories");
+}
+
 export async function fetchBusinessById(id) {
   return request(`/businesses/${id}`);
+}
+
+export async function fetchMyBusinessProfile() {
+  return request("/businesses/me");
+}
+
+export async function saveMyBusinessProfile(payload) {
+  return request("/businesses/me", buildJsonRequest("PATCH", payload));
 }
 
 export async function registerUser(payload) {
@@ -79,6 +91,10 @@ export async function createReservation(payload) {
 
 export async function fetchMyReservations() {
   return request("/reservations/my");
+}
+
+export async function fetchBusinessReservations() {
+  return request("/reservations/business");
 }
 
 export async function createBusinessReview(businessId, payload) {

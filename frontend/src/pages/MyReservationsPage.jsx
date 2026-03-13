@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchMyReservations } from "../services/api.js";
+import { fetchBusinessReservations, fetchMyReservations } from "../services/api.js";
 
 export default function MyReservationsPage({ auth }) {
   const [reservations, setReservations] = useState([]);
-  const [isLoading, setIsLoading] = useState(Boolean(auth && auth.user.role === "user"));
+  const [businessSummary, setBusinessSummary] = useState(null);
+  const [isLoading, setIsLoading] = useState(Boolean(auth));
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (!auth || auth.user.role !== "user") {
+    if (!auth) {
       setReservations([]);
+      setBusinessSummary(null);
       setIsLoading(false);
       return;
     }
@@ -17,12 +19,23 @@ export default function MyReservationsPage({ auth }) {
     setIsLoading(true);
     setErrorMessage("");
 
-    fetchMyReservations()
+    const request =
+      auth.user.role === "business" ? fetchBusinessReservations() : fetchMyReservations();
+
+    request
       .then((data) => {
+        if (auth.user.role === "business") {
+          setBusinessSummary(data.business);
+          setReservations(data.reservations);
+          return;
+        }
+
+        setBusinessSummary(null);
         setReservations(data);
       })
       .catch((error) => {
         setReservations([]);
+        setBusinessSummary(null);
         setErrorMessage(error.message);
       })
       .finally(() => {
@@ -44,20 +57,66 @@ export default function MyReservationsPage({ auth }) {
     );
   }
 
-  if (auth.user.role !== "user") {
-    return (
-      <section className="card auth-card">
-        <h2>Mis reservas</h2>
-        <p className="auth-copy">
-          Esta vista esta disponible para cuentas de usuario cliente. Las cuentas de negocio
-          podran tener su propio panel en una fase posterior.
-        </p>
-      </section>
-    );
-  }
-
   if (isLoading) {
     return <p>Cargando reservas...</p>;
+  }
+
+  if (auth.user.role === "business") {
+    return (
+      <section className="reservation-page">
+        <header className="card reservation-hero">
+          <div>
+            <p className="eyebrow">Panel de negocio</p>
+            <h2>Reservas recibidas</h2>
+            <p className="section-copy">
+              Vista basica para consultar las solicitudes asociadas a tu establecimiento.
+            </p>
+          </div>
+          <div className="reservation-overview">
+            <div>
+              <strong>{reservations.length}</strong>
+              <span>solicitudes registradas</span>
+            </div>
+            <div>
+              <strong>{businessSummary?.name || auth.user.name}</strong>
+              <span>negocio activo</span>
+            </div>
+          </div>
+        </header>
+
+        <section className="card">
+          {errorMessage ? <p className="status-message error">{errorMessage}</p> : null}
+
+          {reservations.length === 0 ? (
+            <p>Todavia no has recibido reservas para tu negocio.</p>
+          ) : (
+            <div className="reservation-stack">
+              {reservations.map((reservation) => (
+                <article className="reservation-item" key={reservation.id}>
+                  <div>
+                    <p className="eyebrow">Reserva #{reservation.id}</p>
+                    <h3>{reservation.customer_name}</h3>
+                  </div>
+                  <p>
+                    <strong>Email:</strong> {reservation.customer_email}
+                  </p>
+                  <p>
+                    <strong>Fecha:</strong>{" "}
+                    {new Date(reservation.reservation_date).toLocaleString("es-ES")}
+                  </p>
+                  <p>
+                    <strong>Personas:</strong> {reservation.people}
+                  </p>
+                  <p>
+                    <strong>Estado:</strong> {reservation.status}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </section>
+    );
   }
 
   return (

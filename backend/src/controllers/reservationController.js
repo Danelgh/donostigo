@@ -73,3 +73,41 @@ export async function getMyReservations(req, res) {
     res.status(500).json({ message: "Error al obtener reservas" });
   }
 }
+
+export async function getBusinessReservations(req, res) {
+  if (req.user.role !== "business") {
+    return res
+      .status(403)
+      .json({ message: "Solo las cuentas de negocio pueden consultar esta vista" });
+  }
+
+  try {
+    const businessResult = await pool.query("SELECT id, name FROM businesses WHERE user_id = $1", [
+      req.user.id
+    ]);
+
+    if (businessResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Todavia no has creado la ficha del negocio en tu perfil"
+      });
+    }
+
+    const business = businessResult.rows[0];
+    const reservationsResult = await pool.query(
+      `SELECT r.id, r.reservation_date, r.people, r.status, r.created_at,
+              u.name AS customer_name, u.email AS customer_email
+       FROM reservations r
+       INNER JOIN users u ON u.id = r.user_id
+       WHERE r.business_id = $1
+       ORDER BY r.reservation_date ASC`,
+      [business.id]
+    );
+
+    res.json({
+      business,
+      reservations: reservationsResult.rows
+    });
+  } catch (_error) {
+    res.status(500).json({ message: "Error al obtener las reservas del negocio" });
+  }
+}

@@ -5,6 +5,7 @@ import {
   createReservation,
   fetchBusinessById
 } from "../services/api.js";
+import { buildGoogleMapsEmbedUrl, buildGoogleMapsSearchUrl } from "../utils/maps.js";
 import { getBusinessInitials, getCategoryKey } from "../utils/businessTheme.js";
 
 export default function BusinessDetailPage({ auth }) {
@@ -132,6 +133,8 @@ export default function BusinessDetailPage({ auth }) {
   const categoryKey = getCategoryKey(business.category);
   const averageRating = Number(business.average_rating || 0);
   const reviewCount = Number(business.review_count || 0);
+  const mapsEmbedUrl = buildGoogleMapsEmbedUrl(business.address);
+  const mapsSearchUrl = buildGoogleMapsSearchUrl(business.address);
 
   return (
     <section className="detail-page">
@@ -199,6 +202,42 @@ export default function BusinessDetailPage({ auth }) {
           <div className="detail-section">
             <h3>Descripcion</h3>
             <p>{business.description}</p>
+          </div>
+
+          <div className="detail-section">
+            <div className="section-heading">
+              <div>
+                <h3>Ubicacion</h3>
+              </div>
+              {mapsSearchUrl ? (
+                <a
+                  className="button secondary"
+                  href={mapsSearchUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Abrir en Google Maps
+                </a>
+              ) : null}
+            </div>
+
+            <p className="section-copy">
+              La direccion guardada en la ficha del negocio se utiliza para mostrar esta vista
+              rapida y facilitar la apertura de Google Maps.
+            </p>
+
+            {mapsEmbedUrl ? (
+              <div className="map-embed-shell">
+                <iframe
+                  title={`Ubicacion de ${business.name}`}
+                  src={mapsEmbedUrl}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            ) : (
+              <p>No hay una direccion suficiente para mostrar la ubicacion.</p>
+            )}
           </div>
 
           <div className="detail-section">
