@@ -5,6 +5,7 @@ import env from "../config/env.js";
 
 const allowedRoles = new Set(["user", "business"]);
 const SESSION_COOKIE_NAME = "donostigo_token";
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizeEmail(email) {
   return email.trim().toLowerCase();
@@ -113,7 +114,7 @@ export async function register(req, res) {
   const trimmedName = name.trim();
   const normalizedEmail = normalizeEmail(email);
 
-  if (!trimmedName || !normalizedEmail.includes("@")) {
+  if (!trimmedName || !emailPattern.test(normalizedEmail)) {
     return res.status(400).json({ message: "Nombre o email no validos" });
   }
 

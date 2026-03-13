@@ -40,8 +40,23 @@ function normalizeOptionalText(value, maxLength) {
   return trimmedValue;
 }
 
-export async function getBusinesses(_req, res) {
+const businessSortMap = {
+  name_asc: "b.name ASC",
+  name_desc: "b.name DESC",
+  rating_desc: "average_rating DESC, b.name ASC"
+};
+
+export async function getBusinesses(req, res) {
   try {
+    const searchQuery = typeof req.query.q === "string" ? req.query.q.trim() : "";
+    const selectedCategory =
+      typeof req.query.category === "string" && req.query.category !== "all"
+        ? req.query.category.trim()
+        : "";
+    const selectedSort =
+      typeof req.query.sort === "string" ? req.query.sort.trim() : "name_asc";
+    const orderByClause = businessSortMap[selectedSort] || businessSortMap.name_asc;
+
     const result = await pool.query(
       `SELECT b.id, b.name, b.description, b.address, b.phone, c.name AS category,
               COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0) AS average_rating,
@@ -49,8 +64,11 @@ export async function getBusinesses(_req, res) {
        FROM businesses b
        LEFT JOIN categories c ON c.id = b.category_id
        LEFT JOIN reviews r ON r.business_id = b.id
+       WHERE ($1 = '' OR b.name ILIKE '%' || $1 || '%')
+         AND ($2 = '' OR c.name = $2)
        GROUP BY b.id, c.name
-       ORDER BY b.name ASC`
+       ORDER BY ${orderByClause}`,
+      [searchQuery, selectedCategory]
     );
 
     res.json(result.rows);

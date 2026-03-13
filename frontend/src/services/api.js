@@ -43,8 +43,24 @@ function buildJsonRequest(method, body) {
   };
 }
 
-export async function fetchBusinesses() {
-  return request("/businesses");
+export async function fetchBusinesses(filters = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (filters.q?.trim()) {
+    searchParams.set("q", filters.q.trim());
+  }
+
+  if (filters.category && filters.category !== "all") {
+    searchParams.set("category", filters.category);
+  }
+
+  if (filters.sort) {
+    searchParams.set("sort", filters.sort);
+  }
+
+  const queryString = searchParams.toString();
+
+  return request(`/businesses${queryString ? `?${queryString}` : ""}`);
 }
 
 export async function fetchCategories() {

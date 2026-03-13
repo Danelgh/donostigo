@@ -1,29 +1,77 @@
-import { useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchBusinesses } from "../services/api.js";
+import { fetchBusinesses, fetchCategories } from "../services/api.js";
 import { getBusinessInitials, getCategoryKey } from "../utils/businessTheme.js";
 
 export default function BusinessListPage() {
   const [businesses, setBusinesses] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedSort, setSelectedSort] = useState("name_asc");
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const hasLoadedOnceRef = useRef(false);
 
   useEffect(() => {
-    fetchBusinesses()
+    fetchCategories()
       .then((data) => {
+        setCategories(data.map((category) => category.name));
+      })
+      .catch(() => {
+        setCategories([]);
+      });
+  }, []);
+
+  useEffect(() => {
+    const isFirstLoad = !hasLoadedOnceRef.current;
+    let isCancelled = false;
+
+    if (isFirstLoad) {
+      setIsInitialLoading(true);
+    } else {
+      setIsFiltering(true);
+    }
+
+    fetchBusinesses({
+      q: deferredSearchTerm,
+      category: selectedCategory,
+      sort: selectedSort
+    })
+      .then((data) => {
+        if (isCancelled) {
+          return;
+        }
+
         setBusinesses(data);
         setHasError(false);
       })
       .catch(() => {
+        if (isCancelled) {
+          return;
+        }
+
         setBusinesses([]);
         setHasError(true);
       })
       .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+        if (isCancelled) {
+          return;
+        }
 
-  if (isLoading) {
+        hasLoadedOnceRef.current = true;
+        setIsInitialLoading(false);
+        setIsFiltering(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [deferredSearchTerm, selectedCategory, selectedSort]);
+
+  if (isInitialLoading) {
     return <p>Cargando negocios...</p>;
   }
 
@@ -34,6 +82,27 @@ export default function BusinessListPage() {
         <p>Comprueba que el backend este arrancado y vuelve a intentarlo.</p>
       </section>
     );
+  }
+
+  const availableCategories =
+    categories.length > 0
+      ? categories
+      : Array.from(
+          new Set(businesses.map((business) => business.category).filter(Boolean))
+        ).sort((leftCategory, rightCategory) => leftCategory.localeCompare(rightCategory, "es"));
+  const visibleBusinesses = businesses;
+  const hasActiveFilters = Boolean(deferredSearchTerm.trim()) || selectedCategory !== "all";
+  const activeSortLabel =
+    selectedSort === "rating_desc"
+      ? "Mejor valorados"
+      : selectedSort === "name_desc"
+        ? "Nombre Z-A"
+        : "Nombre A-Z";
+
+  function handleResetFilters() {
+    setSearchTerm("");
+    setSelectedCategory("all");
+    setSelectedSort("name_asc");
   }
 
   return (
@@ -50,26 +119,95 @@ export default function BusinessListPage() {
 
         <div className="listing-summary">
           <div>
-            <strong>{businesses.length}</strong>
+            <strong>{visibleBusinesses.length}</strong>
             <span>negocios visibles</span>
           </div>
           <div>
-            <strong>4</strong>
-            <span>categorias base</span>
+            <strong>{availableCategories.length}</strong>
+            <span>categorias activas</span>
           </div>
         </div>
       </header>
 
+      <section className="card listing-toolbar">
+        <label className="listing-field listing-search">
+          <span>Buscar por nombre</span>
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Ej. surf, brunch, donosti..."
+          />
+        </label>
+
+        <label className="listing-field">
+          <span>Ordenar por</span>
+          <select
+            value={selectedSort}
+            onChange={(event) => setSelectedSort(event.target.value)}
+          >
+            <option value="name_asc">Nombre A-Z</option>
+            <option value="name_desc">Nombre Z-A</option>
+            <option value="rating_desc">Mejor valorados</option>
+          </select>
+        </label>
+      </section>
+
+      <section className="card listing-feedback">
+        <div>
+          <p className="eyebrow">Exploracion</p>
+          <h3>
+            {visibleBusinesses.length} resultado{visibleBusinesses.length === 1 ? "" : "s"}
+          </h3>
+          <p className="section-copy">
+            {hasActiveFilters
+              ? `Mostrando coincidencias para la busqueda actual, la categoria seleccionada y el orden ${activeSortLabel}.`
+              : `Mostrando el catalogo completo ordenado por ${activeSortLabel}.`}
+          </p>
+        </div>
+
+        <div className="listing-feedback-actions">
+          {isFiltering ? <span className="listing-status">Actualizando listado...</span> : null}
+          <button
+            type="button"
+            className="button secondary"
+            onClick={handleResetFilters}
+            disabled={!hasActiveFilters && selectedSort === "name_asc"}
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      </section>
+
       <div className="category-pills">
-        <span>Restauracion</span>
-        <span>Deporte</span>
-        <span>Bienestar</span>
-        <span>Ocio</span>
+        <button
+          type="button"
+          className={selectedCategory === "all" ? "category-pill is-active" : "category-pill"}
+          onClick={() => setSelectedCategory("all")}
+        >
+          Todas
+        </button>
+        {availableCategories.map((category) => (
+          <button
+            key={category}
+            type="button"
+            className={selectedCategory === category ? "category-pill is-active" : "category-pill"}
+            onClick={() => setSelectedCategory(category)}
+          >
+            {category}
+          </button>
+        ))}
       </div>
 
-      {businesses.length === 0 ? <p>No hay negocios disponibles en este momento.</p> : null}
+      {visibleBusinesses.length === 0 ? (
+        <p>
+          {hasActiveFilters
+            ? "No hay negocios que coincidan con la busqueda o filtros seleccionados."
+            : "No hay negocios disponibles en este momento."}
+        </p>
+      ) : null}
       <div className="business-grid">
-        {businesses.map((business) => (
+        {visibleBusinesses.map((business) => (
           <article
             className="card business-card"
             data-category={getCategoryKey(business.category)}

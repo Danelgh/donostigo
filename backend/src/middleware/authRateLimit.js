@@ -3,19 +3,19 @@ const MAX_ATTEMPTS = 10;
 
 const authAttempts = new Map();
 
-function getClientKey(req) {
-  const forwardedFor = req.headers["x-forwarded-for"];
-
-  if (typeof forwardedFor === "string" && forwardedFor.trim()) {
-    return forwardedFor.split(",")[0].trim();
+function cleanupExpiredAttempts(now) {
+  for (const [clientKey, entry] of authAttempts.entries()) {
+    if (entry.expiresAt <= now) {
+      authAttempts.delete(clientKey);
+    }
   }
-
-  return req.ip || req.socket?.remoteAddress || "unknown";
 }
 
 export function authRateLimit(req, res, next) {
   const now = Date.now();
-  const clientKey = getClientKey(req);
+  cleanupExpiredAttempts(now);
+
+  const clientKey = req.ip || req.socket?.remoteAddress || "unknown";
   const currentEntry = authAttempts.get(clientKey);
 
   if (!currentEntry || currentEntry.expiresAt <= now) {

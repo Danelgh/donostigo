@@ -44,7 +44,7 @@ export async function createBusinessReview(req, res) {
       `SELECT id
        FROM reservations
        WHERE user_id = $1 AND business_id = $2
-         AND status IN ('pending', 'confirmed')
+         AND status = 'confirmed'
          AND reservation_date < NOW()
        LIMIT 1`,
       [req.user.id, businessId]

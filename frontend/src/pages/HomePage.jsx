@@ -83,11 +83,11 @@ export default function HomePage() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Categorias</p>
-            <h3>Categorias iniciales del proyecto</h3>
+            <h3>Categorias principales del catalogo</h3>
           </div>
           <p className="section-copy">
-            En esta primera version se ha planteado una clasificacion sencilla para organizar
-            los establecimientos mostrados en la web.
+            El catalogo se ha ampliado con varias categorias para representar mejor la
+            diversidad de negocios locales que puede reunir la plataforma.
           </p>
         </div>
 
@@ -100,20 +100,44 @@ export default function HomePage() {
 
           <article className="category-card">
             <span>02</span>
+            <h4>Cafeterias y brunch</h4>
+            <p>Locales de desayuno, brunch y cafe con reservas para franjas concretas.</p>
+          </article>
+
+          <article className="category-card">
+            <span>03</span>
             <h4>Deporte</h4>
             <p>Escuelas, actividades y servicios relacionados con el deporte.</p>
           </article>
 
           <article className="category-card">
-            <span>03</span>
-            <h4>Bienestar</h4>
-            <p>Centros y servicios orientados al cuidado personal y al bienestar.</p>
+            <span>04</span>
+            <h4>Bienestar y estetica</h4>
+            <p>Centros orientados al cuidado personal, tratamientos y bienestar.</p>
           </article>
 
           <article className="category-card">
-            <span>04</span>
+            <span>05</span>
             <h4>Ocio</h4>
             <p>Opciones de tiempo libre agrupadas en una misma plataforma.</p>
+          </article>
+
+          <article className="category-card">
+            <span>06</span>
+            <h4>Turismo y visitas guiadas</h4>
+            <p>Rutas y experiencias pensadas para visitantes y usuarios locales.</p>
+          </article>
+
+          <article className="category-card">
+            <span>07</span>
+            <h4>Cultura y talleres</h4>
+            <p>Actividades creativas, manuales y culturales con plazas reservables.</p>
+          </article>
+
+          <article className="category-card">
+            <span>08</span>
+            <h4>Formacion y clases</h4>
+            <p>Academias, cursos y espacios de aprendizaje con reserva de plaza.</p>
           </article>
         </div>
       </section>
