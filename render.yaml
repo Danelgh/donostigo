@@ -31,7 +31,6 @@ services:
   - type: web
     name: danelgh-donostigo-web
     runtime: static
-    region: frankfurt
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
