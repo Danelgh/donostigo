@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { createReservation, fetchBusinessById } from "../services/api.js";
+import {
+  createBusinessReview,
+  createReservation,
+  fetchBusinessById
+} from "../services/api.js";
+import { getBusinessInitials, getCategoryKey } from "../utils/businessTheme.js";
 
 export default function BusinessDetailPage({ auth }) {
   const { id } = useParams();
@@ -11,17 +16,25 @@ export default function BusinessDetailPage({ auth }) {
   const [reservationMessage, setReservationMessage] = useState("");
   const [reservationError, setReservationError] = useState("");
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false);
+  const [reviewRating, setReviewRating] = useState("5");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewMessage, setReviewMessage] = useState("");
+  const [reviewError, setReviewError] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  async function loadBusiness() {
+    try {
+      const data = await fetchBusinessById(id);
+      setBusiness(data);
+      setHasError(false);
+    } catch (_error) {
+      setBusiness(null);
+      setHasError(true);
+    }
+  }
 
   useEffect(() => {
-    fetchBusinessById(id)
-      .then((data) => {
-        setBusiness(data);
-        setHasError(false);
-      })
-      .catch(() => {
-        setBusiness(null);
-        setHasError(true);
-      });
+    loadBusiness();
   }, [id]);
 
   async function handleReservationSubmit(event) {
@@ -57,6 +70,38 @@ export default function BusinessDetailPage({ auth }) {
     }
   }
 
+  async function handleReviewSubmit(event) {
+    event.preventDefault();
+
+    if (!auth?.token) {
+      setReviewError("Debes iniciar sesion para publicar una resena.");
+      setReviewMessage("");
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    setReviewError("");
+    setReviewMessage("");
+
+    try {
+      const response = await createBusinessReview(
+        business.id,
+        {
+          rating: Number(reviewRating),
+          comment: reviewComment
+        },
+        auth.token
+      );
+
+      setReviewMessage(response.message);
+      await loadBusiness();
+    } catch (error) {
+      setReviewError(error.message);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  }
+
   if (hasError) {
     return (
       <section className="card">
@@ -74,9 +119,13 @@ export default function BusinessDetailPage({ auth }) {
     return <p>Cargando negocio...</p>;
   }
 
+  const categoryKey = getCategoryKey(business.category);
+  const averageRating = Number(business.average_rating || 0);
+  const reviewCount = Number(business.review_count || 0);
+
   return (
     <section className="detail-page">
-      <div className="card detail-hero">
+      <div className="card detail-hero" data-category={categoryKey}>
         <div>
           <Link className="detail-back" to="/businesses">
             Volver a negocios
@@ -89,7 +138,15 @@ export default function BusinessDetailPage({ auth }) {
         <div className="detail-tags">
           <span className="detail-tag">Negocio local</span>
           <span className="detail-tag">Reserva online</span>
-          <span className="detail-tag">TFG MVP</span>
+          <span className="detail-tag">{reviewCount} resenas</span>
+        </div>
+
+        <div className="detail-poster">
+          <span className="detail-poster-mark">{getBusinessInitials(business.name)}</span>
+          <div className="detail-poster-copy">
+            <strong>{business.name}</strong>
+            <span>{business.address}</span>
+          </div>
         </div>
       </div>
 
@@ -117,6 +174,16 @@ export default function BusinessDetailPage({ auth }) {
               <span>Disponibilidad</span>
               <strong>Activa para reservas</strong>
             </div>
+
+            <div className="detail-info-item">
+              <span>Valoracion media</span>
+              <strong>{averageRating.toFixed(1)} / 5</strong>
+            </div>
+
+            <div className="detail-info-item">
+              <span>Opiniones</span>
+              <strong>{reviewCount} publicadas</strong>
+            </div>
           </div>
 
           <div className="detail-section">
@@ -131,6 +198,13 @@ export default function BusinessDetailPage({ auth }) {
               <li>Acceso centralizado a la reserva desde una sola pantalla.</li>
               <li>Navegacion clara entre listado y detalle del negocio.</li>
             </ul>
+          </div>
+
+          <div className="detail-section detail-quote">
+            <p>
+              Esta vista reune la informacion principal del negocio y sirve como base para la
+              reserva dentro del flujo planteado en el MVP.
+            </p>
           </div>
         </article>
 
@@ -184,8 +258,113 @@ export default function BusinessDetailPage({ auth }) {
               {reservationError ? <p className="status-message error">{reservationError}</p> : null}
 
               <p className="detail-note">
-                Despues de reservar puedes revisar el resultado en la seccion de mis reservas.
+                Puedes revisar la solicitud en la seccion de mis reservas.
               </p>
+            </>
+          )}
+        </aside>
+      </div>
+
+      <div className="review-layout">
+        <article className="card review-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Comunidad</p>
+              <h3>Resenas del negocio</h3>
+            </div>
+            <p className="section-copy">
+              Opiniones publicadas por usuarios con alguna reserva registrada en este
+              establecimiento.
+            </p>
+          </div>
+
+          {business.reviews?.length ? (
+            <div className="review-stack">
+              {business.reviews.map((review) => (
+                <article className="review-item" key={review.id}>
+                  <div className="review-item-head">
+                    <div className="review-author">
+                      {review.author_avatar ? (
+                        <img
+                          className="review-avatar"
+                          src={review.author_avatar}
+                          alt={`Foto de ${review.author_name}`}
+                        />
+                      ) : (
+                        <span className="review-avatar review-avatar-fallback">
+                          {getBusinessInitials(review.author_name)}
+                        </span>
+                      )}
+                      <div>
+                        <strong>{review.author_name}</strong>
+                        <span>
+                          {review.author_city || "Usuario de DonostiGo"} · {review.rating}/5
+                        </span>
+                      </div>
+                    </div>
+                    <span className="review-date">
+                      {new Date(review.created_at).toLocaleDateString("es-ES")}
+                    </span>
+                  </div>
+                  <p>{review.comment}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p>Todavia no hay resenas publicadas para este negocio.</p>
+          )}
+        </article>
+
+        <aside className="card review-editor">
+          <p className="eyebrow">Tu opinion</p>
+          <h3>Publicar o actualizar resena</h3>
+
+          {!auth ? (
+            <>
+              <p className="detail-aside-copy">
+                Inicia sesion con una cuenta cliente para dejar una opinion.
+              </p>
+              <Link className="button" to="/login">
+                Ir a login
+              </Link>
+            </>
+          ) : auth.user.role === "business" ? (
+            <p className="detail-aside-copy">
+              Las cuentas de negocio no pueden publicar resenas en el catalogo.
+            </p>
+          ) : (
+            <>
+              <p className="detail-aside-copy">
+                Solo se aceptan resenas de usuarios que hayan reservado previamente en este
+                negocio. Si vuelves a enviar la resena, se actualiza la anterior.
+              </p>
+
+              <form className="form" onSubmit={handleReviewSubmit}>
+                <select
+                  value={reviewRating}
+                  onChange={(event) => setReviewRating(event.target.value)}
+                >
+                  <option value="5">5 / 5</option>
+                  <option value="4">4 / 5</option>
+                  <option value="3">3 / 5</option>
+                  <option value="2">2 / 5</option>
+                  <option value="1">1 / 5</option>
+                </select>
+                <textarea
+                  rows="5"
+                  placeholder="Cuenta como ha sido la experiencia"
+                  value={reviewComment}
+                  onChange={(event) => setReviewComment(event.target.value)}
+                  minLength="12"
+                  required
+                />
+                <button type="submit" disabled={isSubmittingReview}>
+                  {isSubmittingReview ? "Publicando..." : "Guardar resena"}
+                </button>
+              </form>
+
+              {reviewMessage ? <p className="status-message success">{reviewMessage}</p> : null}
+              {reviewError ? <p className="status-message error">{reviewError}</p> : null}
             </>
           )}
         </aside>

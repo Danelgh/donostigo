@@ -65,6 +65,10 @@ export async function fetchCurrentUser(token) {
   });
 }
 
+export async function updateCurrentUser(payload, token) {
+  return request("/auth/me", buildJsonRequest("PATCH", payload, token));
+}
+
 export async function createReservation(payload, token) {
   return request("/reservations", buildJsonRequest("POST", payload, token));
 }
@@ -75,4 +79,8 @@ export async function fetchMyReservations(token) {
       Authorization: `Bearer ${token}`
     }
   });
+}
+
+export async function createBusinessReview(businessId, payload, token) {
+  return request(`/businesses/${businessId}/reviews`, buildJsonRequest("POST", payload, token));
 }

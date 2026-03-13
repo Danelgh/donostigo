@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import donostigoScene from "../assets/donostigo-scene.svg";
 
 export default function HomePage() {
   return (
@@ -6,11 +7,11 @@ export default function HomePage() {
       <section className="hero hero-home">
         <div className="hero-copy">
           <p className="eyebrow">TFG DAW 2026 · Donostia-San Sebastian</p>
-          <h2>Reserva planes locales sin perderte entre webs, redes y formularios sueltos.</h2>
+          <h2>Consulta negocios locales y gestiona reservas desde una sola web.</h2>
           <p className="hero-text">
-            DonostiGo centraliza la informacion de pequenos negocios de la ciudad y convierte
-            la busqueda en una experiencia mas clara, rapida y util tanto para clientes como
-            para establecimientos.
+            DonostiGo es una aplicacion pensada para reunir en un mismo sitio informacion
+            basica de pequenos negocios de Donostia-San Sebastian y facilitar la reserva de
+            servicios de forma sencilla.
           </p>
 
           <div className="hero-actions">
@@ -24,13 +25,12 @@ export default function HomePage() {
         </div>
 
         <div className="hero-panel">
-          <div className="hero-panel-card accent">
-            <span className="hero-kicker">MVP actual</span>
-            <strong>Catalogo, detalle y reserva basica</strong>
-            <p>
-              Base funcional construida con React, Express y PostgreSQL para el desarrollo del
-              TFG.
-            </p>
+          <div className="hero-visual card">
+            <img src={donostigoScene} alt="Ilustracion conceptual de DonostiGo" />
+            <div className="hero-visual-badge">
+              <span>Proyecto DonostiGo</span>
+              <strong>Catalogo de negocios y reservas</strong>
+            </div>
           </div>
 
           <div className="hero-metrics">
@@ -53,28 +53,28 @@ export default function HomePage() {
       <section className="home-strip">
         <article className="card feature-card">
           <p className="eyebrow">Descubrimiento</p>
-          <h3>Negocios locales en un solo punto</h3>
+          <h3>Consulta centralizada</h3>
           <p>
-            El usuario consulta establecimientos clasificados por categoria sin depender de
-            multiples canales externos.
+            La plataforma permite consultar establecimientos clasificados por categoria desde
+            una unica interfaz.
           </p>
         </article>
 
         <article className="card feature-card">
           <p className="eyebrow">Reserva</p>
-          <h3>Un flujo mas directo</h3>
+          <h3>Reserva desde el detalle</h3>
           <p>
-            El detalle del negocio concentra la informacion principal y prepara la solicitud
-            de reserva desde una sola vista.
+            Cada ficha de negocio reune la informacion principal y el formulario de reserva
+            basico.
           </p>
         </article>
 
         <article className="card feature-card">
           <p className="eyebrow">Valor local</p>
-          <h3>Mas visibilidad para pequenos comercios</h3>
+          <h3>Apoyo al comercio local</h3>
           <p>
-            La plataforma busca facilitar la presencia digital de negocios que normalmente no
-            disponen de herramientas propias.
+            El proyecto busca mejorar la visibilidad digital de pequenos negocios que no
+            siempre disponen de herramientas propias.
           </p>
         </article>
       </section>
@@ -83,11 +83,11 @@ export default function HomePage() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">Categorias</p>
-            <h3>Una estructura pensada para crecer</h3>
+            <h3>Categorias iniciales del proyecto</h3>
           </div>
           <p className="section-copy">
-            La primera version del proyecto organiza la oferta local en bloques claros y
-            faciles de recorrer.
+            En esta primera version se ha planteado una clasificacion sencilla para organizar
+            los establecimientos mostrados en la web.
           </p>
         </div>
 
@@ -95,25 +95,56 @@ export default function HomePage() {
           <article className="category-card">
             <span>01</span>
             <h4>Restauracion</h4>
-            <p>Bares, cafeterias y espacios gastronomicos con reserva sencilla.</p>
+            <p>Bares, cafeterias y otros establecimientos vinculados al sector gastronomico.</p>
           </article>
 
           <article className="category-card">
             <span>02</span>
             <h4>Deporte</h4>
-            <p>Escuelas, actividades y servicios orientados a un estilo de vida activo.</p>
+            <p>Escuelas, actividades y servicios relacionados con el deporte.</p>
           </article>
 
           <article className="category-card">
             <span>03</span>
             <h4>Bienestar</h4>
-            <p>Centros y servicios enfocados en salud, cuidado personal y relajacion.</p>
+            <p>Centros y servicios orientados al cuidado personal y al bienestar.</p>
           </article>
 
           <article className="category-card">
             <span>04</span>
             <h4>Ocio</h4>
-            <p>Propuestas de tiempo libre con informacion centralizada y acceso rapido.</p>
+            <p>Opciones de tiempo libre agrupadas en una misma plataforma.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="card home-proof">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Experiencia</p>
+            <h3>Recorrido principal del MVP</h3>
+          </div>
+          <p className="section-copy">
+            La aplicacion ya permite mostrar un flujo basico desde el catalogo hasta la
+            gestion de reservas del usuario.
+          </p>
+        </div>
+
+        <div className="proof-grid">
+          <article className="proof-card">
+            <span className="proof-step">01</span>
+            <h4>Explorar</h4>
+            <p>Listado de negocios con acceso rapido a la ficha individual.</p>
+          </article>
+          <article className="proof-card">
+            <span className="proof-step">02</span>
+            <h4>Elegir</h4>
+            <p>Vista de detalle con informacion ampliada del establecimiento.</p>
+          </article>
+          <article className="proof-card">
+            <span className="proof-step">03</span>
+            <h4>Reservar</h4>
+            <p>Formulario de reserva y consulta posterior desde el perfil del usuario.</p>
           </article>
         </div>
       </section>

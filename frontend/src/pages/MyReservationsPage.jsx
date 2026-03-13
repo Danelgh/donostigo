@@ -61,35 +61,55 @@ export default function MyReservationsPage({ auth }) {
   }
 
   return (
-    <section className="card">
-      <h2>Mis reservas</h2>
-
-      {errorMessage ? <p className="status-message error">{errorMessage}</p> : null}
-
-      {reservations.length === 0 ? (
-        <p>Todavia no tienes reservas registradas.</p>
-      ) : (
-        <div className="reservation-stack">
-          {reservations.map((reservation) => (
-            <article className="reservation-item" key={reservation.id}>
-              <div>
-                <p className="eyebrow">Reserva #{reservation.id}</p>
-                <h3>{reservation.business_name}</h3>
-              </div>
-              <p>
-                <strong>Fecha:</strong>{" "}
-                {new Date(reservation.reservation_date).toLocaleString("es-ES")}
-              </p>
-              <p>
-                <strong>Personas:</strong> {reservation.people}
-              </p>
-              <p>
-                <strong>Estado:</strong> {reservation.status}
-              </p>
-            </article>
-          ))}
+    <section className="reservation-page">
+      <header className="card reservation-hero">
+        <div>
+          <p className="eyebrow">Panel de usuario</p>
+          <h2>Mis reservas</h2>
+          <p className="section-copy">
+            Vista basica para consultar las reservas realizadas por el usuario autenticado.
+          </p>
         </div>
-      )}
+        <div className="reservation-overview">
+          <div>
+            <strong>{reservations.length}</strong>
+            <span>reservas activas</span>
+          </div>
+          <div>
+            <strong>{auth.user.name}</strong>
+            <span>usuario autenticado</span>
+          </div>
+        </div>
+      </header>
+
+      <section className="card">
+        {errorMessage ? <p className="status-message error">{errorMessage}</p> : null}
+
+        {reservations.length === 0 ? (
+          <p>Todavia no tienes reservas registradas.</p>
+        ) : (
+          <div className="reservation-stack">
+            {reservations.map((reservation) => (
+              <article className="reservation-item" key={reservation.id}>
+                <div>
+                  <p className="eyebrow">Reserva #{reservation.id}</p>
+                  <h3>{reservation.business_name}</h3>
+                </div>
+                <p>
+                  <strong>Fecha:</strong>{" "}
+                  {new Date(reservation.reservation_date).toLocaleString("es-ES")}
+                </p>
+                <p>
+                  <strong>Personas:</strong> {reservation.people}
+                </p>
+                <p>
+                  <strong>Estado:</strong> {reservation.status}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </section>
   );
 }

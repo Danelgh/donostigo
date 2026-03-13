@@ -15,6 +15,57 @@ function createToken(user) {
   });
 }
 
+function sanitizeUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    bio: user.bio ?? "",
+    avatarUrl: user.avatar_url ?? "",
+    city: user.city ?? "",
+    instagramUrl: user.instagram_url ?? "",
+    tiktokUrl: user.tiktok_url ?? "",
+    featuredPostUrl: user.featured_post_url ?? ""
+  };
+}
+
+function normalizeOptionalText(value, maxLength) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error("invalid_text");
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  if (trimmedValue.length > maxLength) {
+    throw new Error("invalid_text_length");
+  }
+
+  return trimmedValue;
+}
+
+function normalizeOptionalUrl(value) {
+  const normalizedValue = normalizeOptionalText(value, 300);
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (!/^https?:\/\//i.test(normalizedValue)) {
+    throw new Error("invalid_url");
+  }
+
+  return normalizedValue;
+}
+
 export async function register(req, res) {
   const { name, email, password, role = "user" } = req.body;
 
@@ -54,7 +105,7 @@ export async function register(req, res) {
       [trimmedName, normalizedEmail, hashedPassword, role]
     );
 
-    const user = result.rows[0];
+    const user = sanitizeUser(result.rows[0]);
 
     res.status(201).json({
       user,
@@ -93,12 +144,7 @@ export async function login(req, res) {
     }
 
     res.json({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      },
+      user: sanitizeUser(user),
       token: createToken(user)
     });
   } catch (_error) {
@@ -108,9 +154,13 @@ export async function login(req, res) {
 
 export async function getCurrentUser(req, res) {
   try {
-    const result = await pool.query("SELECT id, name, email, role FROM users WHERE id = $1", [
-      req.user.id
-    ]);
+    const result = await pool.query(
+      `SELECT id, name, email, role, bio, avatar_url, city, instagram_url, tiktok_url,
+              featured_post_url
+       FROM users
+       WHERE id = $1`,
+      [req.user.id]
+    );
 
     const user = result.rows[0];
 
@@ -118,8 +168,70 @@ export async function getCurrentUser(req, res) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    res.json({ user });
+    res.json({ user: sanitizeUser(user) });
   } catch (_error) {
     res.status(500).json({ message: "Error interno al obtener la sesion" });
+  }
+}
+
+export async function updateCurrentUser(req, res) {
+  const trimmedName = typeof req.body.name === "string" ? req.body.name.trim() : "";
+
+  if (!trimmedName) {
+    return res.status(400).json({ message: "El nombre no puede quedar vacio" });
+  }
+
+  if (trimmedName.length > 100) {
+    return res.status(400).json({ message: "El nombre es demasiado largo" });
+  }
+
+  try {
+    const bio = normalizeOptionalText(req.body.bio, 500);
+    const city = normalizeOptionalText(req.body.city, 120);
+    const avatarUrl = normalizeOptionalUrl(req.body.avatarUrl);
+    const instagramUrl = normalizeOptionalUrl(req.body.instagramUrl);
+    const tiktokUrl = normalizeOptionalUrl(req.body.tiktokUrl);
+    const featuredPostUrl = normalizeOptionalUrl(req.body.featuredPostUrl);
+
+    const result = await pool.query(
+      `UPDATE users
+       SET name = $1,
+           bio = $2,
+           city = $3,
+           avatar_url = $4,
+           instagram_url = $5,
+           tiktok_url = $6,
+           featured_post_url = $7
+       WHERE id = $8
+       RETURNING id, name, email, role, bio, avatar_url, city, instagram_url, tiktok_url,
+                 featured_post_url`,
+      [
+        trimmedName,
+        bio,
+        city,
+        avatarUrl,
+        instagramUrl,
+        tiktokUrl,
+        featuredPostUrl,
+        req.user.id
+      ]
+    );
+
+    res.json({
+      message: "Perfil actualizado correctamente",
+      user: sanitizeUser(result.rows[0])
+    });
+  } catch (error) {
+    if (
+      error.message === "invalid_text" ||
+      error.message === "invalid_text_length" ||
+      error.message === "invalid_url"
+    ) {
+      return res.status(400).json({
+        message: "Revisa los campos del perfil. Las URL deben empezar por http:// o https://"
+      });
+    }
+
+    res.status(500).json({ message: "Error interno al actualizar el perfil" });
   }
 }

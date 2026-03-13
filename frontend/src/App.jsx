@@ -5,8 +5,10 @@ import BusinessListPage from "./pages/BusinessListPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import MyReservationsPage from "./pages/MyReservationsPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import { fetchCurrentUser } from "./services/api.js";
+import { getBusinessInitials } from "./utils/businessTheme.js";
 
 const AUTH_STORAGE_KEY = "donostigo_auth";
 
@@ -72,6 +74,19 @@ export default function App() {
     setIsHydratingAuth(false);
   }
 
+  function handleUserUpdate(user) {
+    setAuth((currentAuth) => {
+      if (!currentAuth) {
+        return currentAuth;
+      }
+
+      return {
+        ...currentAuth,
+        user
+      };
+    });
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -83,6 +98,7 @@ export default function App() {
           <Link to="/">Inicio</Link>
           <Link to="/businesses">Negocios</Link>
           <Link to="/my-reservations">Mis reservas</Link>
+          {auth ? <Link to="/profile">Mi perfil</Link> : null}
         </nav>
 
         <div className="topbar-actions">
@@ -94,8 +110,23 @@ export default function App() {
           ) : auth ? (
             <>
               <div className="user-badge">
-                <strong>{auth.user.name}</strong>
-                <span>{auth.user.role === "business" ? "Negocio" : "Usuario"}</span>
+                <div className="user-badge-row">
+                  {auth.user.avatarUrl ? (
+                    <img
+                      className="topbar-avatar"
+                      src={auth.user.avatarUrl}
+                      alt={`Foto de ${auth.user.name}`}
+                    />
+                  ) : (
+                    <span className="topbar-avatar topbar-avatar-fallback">
+                      {getBusinessInitials(auth.user.name)}
+                    </span>
+                  )}
+                  <div>
+                    <strong>{auth.user.name}</strong>
+                    <span>{auth.user.role === "business" ? "Negocio" : "Usuario"}</span>
+                  </div>
+                </div>
               </div>
               <button type="button" className="button secondary" onClick={handleLogout}>
                 Cerrar sesion
@@ -136,6 +167,10 @@ export default function App() {
                 onAuthSuccess={handleAuthSuccess}
               />
             }
+          />
+          <Route
+            path="/profile"
+            element={<ProfilePage auth={auth} onUserUpdate={handleUserUpdate} />}
           />
           <Route path="/businesses" element={<BusinessListPage />} />
           <Route path="/businesses/:id" element={<BusinessDetailPage auth={auth} />} />
