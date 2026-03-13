@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchBusinessReservations, fetchMyReservations } from "../services/api.js";
 
+function formatReservationStatus(status) {
+  if (status === "confirmed") {
+    return "Confirmada";
+  }
+
+  if (status === "cancelled") {
+    return "Cancelada";
+  }
+
+  return "Pendiente";
+}
+
 export default function MyReservationsPage({ auth }) {
   const [reservations, setReservations] = useState([]);
   const [businessSummary, setBusinessSummary] = useState(null);
@@ -110,6 +122,9 @@ export default function MyReservationsPage({ auth }) {
                   <p>
                     <strong>Estado:</strong> {reservation.status}
                   </p>
+                  <span className={`reservation-status reservation-status-${reservation.status}`}>
+                    {formatReservationStatus(reservation.status)}
+                  </span>
                 </article>
               ))}
             </div>
@@ -164,6 +179,9 @@ export default function MyReservationsPage({ auth }) {
                 <p>
                   <strong>Estado:</strong> {reservation.status}
                 </p>
+                <span className={`reservation-status reservation-status-${reservation.status}`}>
+                  {formatReservationStatus(reservation.status)}
+                </span>
               </article>
             ))}
           </div>

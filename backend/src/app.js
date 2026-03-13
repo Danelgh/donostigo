@@ -30,7 +30,7 @@ app.use(
     credentials: true
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, message: "DonostiGo API running" });

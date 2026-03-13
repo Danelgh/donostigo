@@ -55,6 +55,11 @@ CREATE TABLE reviews (
   UNIQUE (user_id, business_id)
 );
 
+CREATE INDEX idx_businesses_category_id ON businesses(category_id);
+CREATE INDEX idx_reservations_user_id_date ON reservations(user_id, reservation_date);
+CREATE INDEX idx_reservations_business_id_date ON reservations(business_id, reservation_date);
+CREATE INDEX idx_reviews_business_id ON reviews(business_id);
+
 INSERT INTO categories (name) VALUES
   ('Restauracion'),
   ('Cafeterias y brunch'),

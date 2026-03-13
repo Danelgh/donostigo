@@ -5,6 +5,7 @@ import BusinessListPage from "./pages/BusinessListPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import MyReservationsPage from "./pages/MyReservationsPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import { fetchCurrentUser, logoutUser } from "./services/api.js";
@@ -146,6 +147,7 @@ export default function App() {
           <Route path="/businesses" element={<BusinessListPage />} />
           <Route path="/businesses/:id" element={<BusinessDetailPage auth={auth} />} />
           <Route path="/my-reservations" element={<MyReservationsPage auth={auth} />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
     </div>

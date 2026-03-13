@@ -188,6 +188,12 @@ export async function upsertMyBusiness(req, res) {
 }
 
 export async function getBusinessById(req, res) {
+  const businessId = Number.parseInt(req.params.id, 10);
+
+  if (!Number.isInteger(businessId) || businessId <= 0) {
+    return res.status(400).json({ message: "Identificador de negocio no valido" });
+  }
+
   try {
     const businessResult = await pool.query(
       `SELECT b.id, b.name, b.description, b.address, b.phone, c.name AS category,
@@ -198,7 +204,7 @@ export async function getBusinessById(req, res) {
        LEFT JOIN reviews r ON r.business_id = b.id
        WHERE b.id = $1
        GROUP BY b.id, c.name`,
-      [req.params.id]
+      [businessId]
     );
 
     if (businessResult.rows.length === 0) {
@@ -212,7 +218,7 @@ export async function getBusinessById(req, res) {
        INNER JOIN users u ON u.id = r.user_id
        WHERE r.business_id = $1
        ORDER BY r.created_at DESC`,
-      [req.params.id]
+      [businessId]
     );
 
     res.json({
