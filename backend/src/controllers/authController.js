@@ -216,10 +216,13 @@ export async function getCurrentUser(req, res) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    const sanitizedUser = sanitizeUser(user);
+    const refreshedToken = createToken(sanitizedUser);
+
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-    res.json({ user: sanitizeUser(user) });
+    res.json({ user: sanitizedUser, token: refreshedToken });
   } catch (_error) {
     res.status(500).json({ message: "Error interno al obtener la sesion" });
   }

@@ -141,7 +141,13 @@ export async function loginUser(payload) {
 }
 
 export async function fetchCurrentUser() {
-  return request("/auth/me");
+  const session = await request("/auth/me");
+
+  if (session?.token) {
+    storeToken(session.token);
+  }
+
+  return session;
 }
 
 export async function updateCurrentUser(payload) {
