@@ -18,32 +18,38 @@ function createToken(user) {
 }
 
 function setSessionCookie(res, token) {
+  const isProduction = env.nodeEnv === "production";
   const cookieParts = [
     `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
     "Path=/",
     "HttpOnly",
-    "SameSite=Lax",
     `Max-Age=${60 * 60 * 24 * 7}`
   ];
 
-  if (env.nodeEnv === "production") {
+  if (isProduction) {
+    cookieParts.push("SameSite=None");
     cookieParts.push("Secure");
+  } else {
+    cookieParts.push("SameSite=Lax");
   }
 
   res.setHeader("Set-Cookie", cookieParts.join("; "));
 }
 
 function clearSessionCookie(res) {
+  const isProduction = env.nodeEnv === "production";
   const cookieParts = [
     `${SESSION_COOKIE_NAME}=`,
     "Path=/",
     "HttpOnly",
-    "SameSite=Lax",
     "Max-Age=0"
   ];
 
-  if (env.nodeEnv === "production") {
+  if (isProduction) {
+    cookieParts.push("SameSite=None");
     cookieParts.push("Secure");
+  } else {
+    cookieParts.push("SameSite=Lax");
   }
 
   res.setHeader("Set-Cookie", cookieParts.join("; "));
