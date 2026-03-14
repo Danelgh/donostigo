@@ -12,7 +12,15 @@ import {
   getCategoryKey
 } from "../utils/businessTheme.js";
 
-export default function BusinessDetailPage({ auth }) {
+function buildMinReservationDateTime() {
+  const currentDate = new Date();
+  const timezoneOffsetInMilliseconds = currentDate.getTimezoneOffset() * 60 * 1000;
+  const localDate = new Date(currentDate.getTime() - timezoneOffsetInMilliseconds);
+
+  return localDate.toISOString().slice(0, 16);
+}
+
+export default function BusinessDetailPage({ auth, isHydratingAuth }) {
   const { id } = useParams();
   const [business, setBusiness] = useState(null);
   const [hasError, setHasError] = useState(false);
@@ -109,6 +117,7 @@ export default function BusinessDetailPage({ auth }) {
       );
 
       setReviewMessage(response.message);
+      setReviewComment("");
       await loadBusiness();
     } catch (error) {
       setReviewError(error.message);
@@ -140,6 +149,7 @@ export default function BusinessDetailPage({ auth }) {
   const mapsEmbedUrl = buildGoogleMapsEmbedUrl(business.address);
   const mapsSearchUrl = buildGoogleMapsSearchUrl(business.address);
   const posterImage = getCategoryImage(business.category);
+  const minimumReservationDate = buildMinReservationDateTime();
 
   return (
     <section className="detail-page">
@@ -270,7 +280,9 @@ export default function BusinessDetailPage({ auth }) {
         <aside className="card detail-aside">
           <p className="eyebrow">Reserva</p>
           <h3>Reserva rapida</h3>
-          {!auth ? (
+          {isHydratingAuth ? (
+            <p className="detail-aside-copy">Verificando sesion antes de habilitar la reserva...</p>
+          ) : !auth ? (
             <>
               <p className="detail-aside-copy">
                 Para completar una reserva debes iniciar sesion con una cuenta de usuario.
@@ -295,6 +307,7 @@ export default function BusinessDetailPage({ auth }) {
                 <input
                   type="datetime-local"
                   value={reservationDate}
+                  min={minimumReservationDate}
                   onChange={(event) => setReservationDate(event.target.value)}
                   required
                 />
@@ -332,7 +345,7 @@ export default function BusinessDetailPage({ auth }) {
               <h3>Resenas del negocio</h3>
             </div>
             <p className="section-copy">
-              Opiniones publicadas por usuarios con alguna reserva registrada en este
+              Opiniones publicadas por usuarios con una reserva confirmada y ya pasada en este
               establecimiento.
             </p>
           </div>
@@ -378,7 +391,11 @@ export default function BusinessDetailPage({ auth }) {
           <p className="eyebrow">Tu opinion</p>
           <h3>Publicar o actualizar resena</h3>
 
-          {!auth ? (
+          {isHydratingAuth ? (
+            <p className="detail-aside-copy">
+              Verificando sesion antes de habilitar la publicacion de resenas.
+            </p>
+          ) : !auth ? (
             <>
               <p className="detail-aside-copy">
                 Inicia sesion con una cuenta cliente para dejar una opinion.
@@ -394,8 +411,8 @@ export default function BusinessDetailPage({ auth }) {
           ) : (
             <>
               <p className="detail-aside-copy">
-                Solo se aceptan resenas de usuarios que hayan reservado previamente en este
-                negocio. Si vuelves a enviar la resena, se actualiza la anterior.
+                Solo se aceptan resenas de usuarios con una reserva confirmada y ya pasada en
+                este negocio. Si vuelves a enviar la resena, se actualiza la anterior.
               </p>
 
               <form className="form" onSubmit={handleReviewSubmit}>
@@ -414,7 +431,8 @@ export default function BusinessDetailPage({ auth }) {
                   placeholder="Cuenta como ha sido la experiencia"
                   value={reviewComment}
                   onChange={(event) => setReviewComment(event.target.value)}
-                  minLength="12"
+                  minLength={12}
+                  maxLength={500}
                   required
                 />
                 <button type="submit" disabled={isSubmittingReview}>

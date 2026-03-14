@@ -1,5 +1,7 @@
 import pool from "../config/db.js";
 
+const allowedReservationStatuses = new Set(["pending", "confirmed", "cancelled"]);
+
 export async function createReservation(req, res) {
   const { businessId, reservationDate, people } = req.body;
 
@@ -109,5 +111,74 @@ export async function getBusinessReservations(req, res) {
     });
   } catch (_error) {
     res.status(500).json({ message: "Error al obtener las reservas del negocio" });
+  }
+}
+
+export async function updateReservationStatus(req, res) {
+  if (req.user.role !== "business") {
+    return res
+      .status(403)
+      .json({ message: "Solo las cuentas de negocio pueden actualizar reservas" });
+  }
+
+  const reservationId = Number.parseInt(req.params.id, 10);
+  const status = typeof req.body.status === "string" ? req.body.status.trim() : "";
+
+  if (!Number.isInteger(reservationId) || reservationId <= 0) {
+    return res.status(400).json({ message: "Identificador de reserva no valido" });
+  }
+
+  if (!allowedReservationStatuses.has(status)) {
+    return res.status(400).json({ message: "El estado indicado no es valido" });
+  }
+
+  try {
+    const businessResult = await pool.query("SELECT id FROM businesses WHERE user_id = $1", [
+      req.user.id
+    ]);
+
+    if (businessResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Todavia no has creado la ficha del negocio en tu perfil"
+      });
+    }
+
+    const businessId = businessResult.rows[0].id;
+    const reservationResult = await pool.query(
+      `SELECT r.id, r.reservation_date, r.people, r.status, r.created_at,
+              u.name AS customer_name, u.email AS customer_email
+       FROM reservations r
+       INNER JOIN users u ON u.id = r.user_id
+       WHERE r.id = $1 AND r.business_id = $2`,
+      [reservationId, businessId]
+    );
+
+    if (reservationResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "La reserva indicada no existe o no pertenece a tu negocio"
+      });
+    }
+
+    const updatedReservationResult = await pool.query(
+      `UPDATE reservations
+       SET status = $1
+       WHERE id = $2
+       RETURNING id, reservation_date, people, status, created_at`,
+      [status, reservationId]
+    );
+
+    const currentReservation = reservationResult.rows[0];
+    const updatedReservation = updatedReservationResult.rows[0];
+
+    res.json({
+      message: "Estado de la reserva actualizado correctamente",
+      reservation: {
+        ...updatedReservation,
+        customer_name: currentReservation.customer_name,
+        customer_email: currentReservation.customer_email
+      }
+    });
+  } catch (_error) {
+    res.status(500).json({ message: "Error interno al actualizar la reserva" });
   }
 }

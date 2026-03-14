@@ -48,6 +48,7 @@ export default function LoginPage({ auth, isHydratingAuth, onAuthSuccess }) {
             type="email"
             placeholder="Email"
             value={email}
+            maxLength={150}
             onChange={(event) => setEmail(event.target.value)}
             required
           />

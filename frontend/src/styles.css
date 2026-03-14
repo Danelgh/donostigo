@@ -360,6 +360,11 @@ button:hover {
   background: linear-gradient(135deg, #d06a43, #ad5532);
 }
 
+.button.button-danger,
+button.button-danger {
+  background: linear-gradient(135deg, #b33b3b, #8f2626);
+}
+
 button:disabled {
   opacity: 0.7;
   cursor: wait;
@@ -1220,6 +1225,13 @@ button:disabled {
   display: grid;
   gap: 0.35rem;
   padding: 1.1rem;
+}
+
+.reservation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 0.45rem;
 }
 
 .reservation-status {

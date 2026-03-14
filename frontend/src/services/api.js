@@ -176,6 +176,10 @@ export async function fetchBusinessReservations() {
   return request("/reservations/business");
 }
 
+export async function updateReservationStatus(reservationId, payload) {
+  return request(`/reservations/${reservationId}/status`, buildJsonRequest("PATCH", payload));
+}
+
 export async function createBusinessReview(businessId, payload) {
   return request(`/businesses/${businessId}/reviews`, buildJsonRequest("POST", payload));
 }

@@ -20,7 +20,7 @@ function createInitialState(user) {
   };
 }
 
-export default function ProfilePage({ auth, onUserUpdate }) {
+export default function ProfilePage({ auth, isHydratingAuth, onUserUpdate }) {
   const [formData, setFormData] = useState(createInitialState(auth?.user));
   const [businessFormData, setBusinessFormData] = useState({
     name: "",
@@ -160,6 +160,10 @@ export default function ProfilePage({ auth, onUserUpdate }) {
     }
   }
 
+  if (isHydratingAuth) {
+    return <p>Verificando sesion...</p>;
+  }
+
   if (!auth) {
     return (
       <section className="card auth-card">
@@ -211,6 +215,7 @@ export default function ProfilePage({ auth, onUserUpdate }) {
                 type="text"
                 placeholder="Nombre visible"
                 value={formData.name}
+                maxLength={100}
                 onChange={(event) => updateField("name", event.target.value)}
                 required
               />
@@ -218,36 +223,42 @@ export default function ProfilePage({ auth, onUserUpdate }) {
                 type="text"
                 placeholder="Ciudad"
                 value={formData.city}
+                maxLength={120}
                 onChange={(event) => updateField("city", event.target.value)}
               />
               <input
                 type="url"
                 placeholder="URL de la foto de perfil"
                 value={formData.avatarUrl}
+                maxLength={300}
                 onChange={(event) => updateField("avatarUrl", event.target.value)}
               />
               <textarea
                 rows="5"
                 placeholder="Presentacion breve"
                 value={formData.bio}
+                maxLength={500}
                 onChange={(event) => updateField("bio", event.target.value)}
               />
               <input
                 type="url"
                 placeholder="URL de Instagram"
                 value={formData.instagramUrl}
+                maxLength={300}
                 onChange={(event) => updateField("instagramUrl", event.target.value)}
               />
               <input
                 type="url"
                 placeholder="URL de TikTok"
                 value={formData.tiktokUrl}
+                maxLength={300}
                 onChange={(event) => updateField("tiktokUrl", event.target.value)}
               />
               <input
                 type="url"
                 placeholder="URL de publicacion destacada"
                 value={formData.featuredPostUrl}
+                maxLength={300}
                 onChange={(event) => updateField("featuredPostUrl", event.target.value)}
               />
               <button type="submit" disabled={isSubmitting}>
@@ -275,6 +286,7 @@ export default function ProfilePage({ auth, onUserUpdate }) {
                   type="text"
                   placeholder="Nombre comercial"
                   value={businessFormData.name}
+                  maxLength={150}
                   onChange={(event) => updateBusinessField("name", event.target.value)}
                   required
                 />
@@ -294,6 +306,7 @@ export default function ProfilePage({ auth, onUserUpdate }) {
                   rows="5"
                   placeholder="Descripcion del negocio"
                   value={businessFormData.description}
+                  maxLength={1200}
                   onChange={(event) => updateBusinessField("description", event.target.value)}
                   required
                 />
@@ -301,6 +314,7 @@ export default function ProfilePage({ auth, onUserUpdate }) {
                   type="text"
                   placeholder="Direccion"
                   value={businessFormData.address}
+                  maxLength={200}
                   onChange={(event) => updateBusinessField("address", event.target.value)}
                   required
                 />
@@ -312,6 +326,7 @@ export default function ProfilePage({ auth, onUserUpdate }) {
                   type="text"
                   placeholder="Telefono"
                   value={businessFormData.phone}
+                  maxLength={30}
                   onChange={(event) => updateBusinessField("phone", event.target.value)}
                 />
                 <button type="submit" disabled={isLoadingBusinessData}>

@@ -219,6 +219,7 @@ export async function getCurrentUser(req, res) {
     const sanitizedUser = sanitizeUser(user);
     const refreshedToken = createToken(sanitizedUser);
 
+    setSessionCookie(res, refreshedToken);
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");

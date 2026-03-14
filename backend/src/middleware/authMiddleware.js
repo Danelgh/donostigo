@@ -32,7 +32,8 @@ export function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   const cookies = parseCookieHeader(req.headers.cookie);
   const cookieToken = cookies.donostigo_token;
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : cookieToken;
+  const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const token = cookieToken || headerToken;
 
   if (!token) {
     return res.status(401).json({ message: "Token no proporcionado" });

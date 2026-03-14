@@ -59,6 +59,7 @@ export default function RegisterPage({ auth, isHydratingAuth, onAuthSuccess }) {
             type="text"
             placeholder="Nombre"
             value={formData.name}
+            maxLength={100}
             onChange={(event) => updateField("name", event.target.value)}
             required
           />
@@ -66,6 +67,7 @@ export default function RegisterPage({ auth, isHydratingAuth, onAuthSuccess }) {
             type="email"
             placeholder="Email"
             value={formData.email}
+            maxLength={150}
             onChange={(event) => updateField("email", event.target.value)}
             required
           />

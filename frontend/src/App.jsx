@@ -144,11 +144,23 @@ export default function App() {
           />
           <Route
             path="/profile"
-            element={<ProfilePage auth={auth} onUserUpdate={handleUserUpdate} />}
+            element={
+              <ProfilePage
+                auth={auth}
+                isHydratingAuth={isHydratingAuth}
+                onUserUpdate={handleUserUpdate}
+              />
+            }
           />
           <Route path="/businesses" element={<BusinessListPage />} />
-          <Route path="/businesses/:id" element={<BusinessDetailPage auth={auth} />} />
-          <Route path="/my-reservations" element={<MyReservationsPage auth={auth} />} />
+          <Route
+            path="/businesses/:id"
+            element={<BusinessDetailPage auth={auth} isHydratingAuth={isHydratingAuth} />}
+          />
+          <Route
+            path="/my-reservations"
+            element={<MyReservationsPage auth={auth} isHydratingAuth={isHydratingAuth} />}
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

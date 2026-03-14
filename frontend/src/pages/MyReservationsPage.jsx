@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchBusinessReservations, fetchMyReservations } from "../services/api.js";
+import {
+  fetchBusinessReservations,
+  fetchMyReservations,
+  updateReservationStatus
+} from "../services/api.js";
 
 function formatReservationStatus(status) {
   if (status === "confirmed") {
@@ -14,11 +18,13 @@ function formatReservationStatus(status) {
   return "Pendiente";
 }
 
-export default function MyReservationsPage({ auth }) {
+export default function MyReservationsPage({ auth, isHydratingAuth }) {
   const [reservations, setReservations] = useState([]);
   const [businessSummary, setBusinessSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(auth));
+  const [isUpdatingReservationId, setIsUpdatingReservationId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     if (!auth) {
@@ -30,6 +36,7 @@ export default function MyReservationsPage({ auth }) {
 
     setIsLoading(true);
     setErrorMessage("");
+    setSuccessMessage("");
 
     const request =
       auth.user.role === "business" ? fetchBusinessReservations() : fetchMyReservations();
@@ -54,6 +61,30 @@ export default function MyReservationsPage({ auth }) {
         setIsLoading(false);
       });
   }, [auth]);
+
+  async function handleStatusUpdate(reservationId, status) {
+    setIsUpdatingReservationId(reservationId);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const response = await updateReservationStatus(reservationId, { status });
+      setReservations((currentReservations) =>
+        currentReservations.map((reservation) =>
+          reservation.id === reservationId ? response.reservation : reservation
+        )
+      );
+      setSuccessMessage(response.message);
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setIsUpdatingReservationId(null);
+    }
+  }
+
+  if (isHydratingAuth) {
+    return <p>Verificando sesion...</p>;
+  }
 
   if (!auth) {
     return (
@@ -97,6 +128,7 @@ export default function MyReservationsPage({ auth }) {
         </header>
 
         <section className="card">
+          {successMessage ? <p className="status-message success">{successMessage}</p> : null}
           {errorMessage ? <p className="status-message error">{errorMessage}</p> : null}
 
           {reservations.length === 0 ? (
@@ -125,6 +157,32 @@ export default function MyReservationsPage({ auth }) {
                   <span className={`reservation-status reservation-status-${reservation.status}`}>
                     {formatReservationStatus(reservation.status)}
                   </span>
+                  <div className="reservation-actions">
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={() => handleStatusUpdate(reservation.id, "confirmed")}
+                      disabled={
+                        isUpdatingReservationId === reservation.id ||
+                        reservation.status === "confirmed"
+                      }
+                    >
+                      {isUpdatingReservationId === reservation.id
+                        ? "Actualizando..."
+                        : "Confirmar"}
+                    </button>
+                    <button
+                      type="button"
+                      className="button secondary button-danger"
+                      onClick={() => handleStatusUpdate(reservation.id, "cancelled")}
+                      disabled={
+                        isUpdatingReservationId === reservation.id ||
+                        reservation.status === "cancelled"
+                      }
+                    >
+                      {isUpdatingReservationId === reservation.id ? "Actualizando..." : "Cancelar"}
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -157,6 +215,7 @@ export default function MyReservationsPage({ auth }) {
       </header>
 
       <section className="card">
+        {successMessage ? <p className="status-message success">{successMessage}</p> : null}
         {errorMessage ? <p className="status-message error">{errorMessage}</p> : null}
 
         {reservations.length === 0 ? (

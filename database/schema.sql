@@ -95,7 +95,7 @@ INSERT INTO users (
     NULL
   ),
   (
-    'Ane Lopez',
+    'Ane Iglesias',
     'ane@donostigo.local',
     '$2b$10$w/SskIg3vFZ49Ym5YBGW2O57PzWqqbUkmsIC38Xuet0OgDjPGiMdy',
     'user',
