@@ -154,7 +154,7 @@ export async function register(req, res) {
     const token = createToken(user);
     setSessionCookie(res, token);
 
-    res.status(201).json({ user });
+    res.status(201).json({ user, token });
   } catch (_error) {
     res.status(500).json({ message: "Error interno al registrar usuario" });
   }
@@ -194,7 +194,7 @@ export async function login(req, res) {
     const token = createToken(user);
     setSessionCookie(res, token);
 
-    res.json({ user: sanitizeUser(user) });
+    res.json({ user: sanitizeUser(user), token });
   } catch (_error) {
     res.status(500).json({ message: "Error interno al iniciar sesion" });
   }

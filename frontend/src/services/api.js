@@ -1,7 +1,34 @@
 const API_URL = import.meta.env.VITE_API_URL;
+const TOKEN_STORAGE_KEY = "donostigo_token";
 
 if (!API_URL) {
   throw new Error("Missing VITE_API_URL environment variable");
+}
+
+function getStoredToken() {
+  try {
+    return window.localStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function storeToken(token) {
+  try {
+    if (token) {
+      window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    }
+  } catch (_error) {
+    // Ignoramos errores de almacenamiento para no bloquear la interfaz.
+  }
+}
+
+function clearStoredToken() {
+  try {
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch (_error) {
+    // Ignoramos errores de almacenamiento para no bloquear la interfaz.
+  }
 }
 
 async function parseResponse(response) {
@@ -15,14 +42,26 @@ async function parseResponse(response) {
 }
 
 async function request(path, options = {}) {
+  const token = getStoredToken();
+  const requestHeaders = new Headers(options.headers || {});
+
+  if (token && !requestHeaders.has("Authorization")) {
+    requestHeaders.set("Authorization", `Bearer ${token}`);
+  }
+
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
     cache: "no-store",
+    headers: requestHeaders,
     ...options
   });
   const data = await parseResponse(response);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearStoredToken();
+    }
+
     const message =
       typeof data === "object" && data?.message
         ? data.message
@@ -81,11 +120,23 @@ export async function saveMyBusinessProfile(payload) {
 }
 
 export async function registerUser(payload) {
-  return request("/auth/register", buildJsonRequest("POST", payload));
+  const session = await request("/auth/register", buildJsonRequest("POST", payload));
+
+  if (session?.token) {
+    storeToken(session.token);
+  }
+
+  return session;
 }
 
 export async function loginUser(payload) {
-  return request("/auth/login", buildJsonRequest("POST", payload));
+  const session = await request("/auth/login", buildJsonRequest("POST", payload));
+
+  if (session?.token) {
+    storeToken(session.token);
+  }
+
+  return session;
 }
 
 export async function fetchCurrentUser() {
@@ -97,9 +148,13 @@ export async function updateCurrentUser(payload) {
 }
 
 export async function logoutUser() {
-  return request("/auth/logout", {
+  const response = await request("/auth/logout", {
     method: "POST"
   });
+
+  clearStoredToken();
+
+  return response;
 }
 
 export async function createReservation(payload) {
