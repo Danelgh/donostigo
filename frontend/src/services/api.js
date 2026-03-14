@@ -42,8 +42,9 @@ async function parseResponse(response) {
 }
 
 async function request(path, options = {}) {
+  const { headers: optionHeaders, ...restOptions } = options;
   const token = getStoredToken();
-  const requestHeaders = new Headers(options.headers || {});
+  const requestHeaders = new Headers(optionHeaders || {});
 
   if (token && !requestHeaders.has("Authorization")) {
     requestHeaders.set("Authorization", `Bearer ${token}`);
@@ -52,8 +53,8 @@ async function request(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
     cache: "no-store",
-    headers: requestHeaders,
-    ...options
+    ...restOptions,
+    headers: requestHeaders
   });
   const data = await parseResponse(response);
 
