@@ -17,6 +17,7 @@ async function parseResponse(response) {
 async function request(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     credentials: "include",
+    cache: "no-store",
     ...options
   });
   const data = await parseResponse(response);
