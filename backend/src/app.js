@@ -35,6 +35,13 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
+app.get("/api/health/live", (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    message: "DonostiGo API alive"
+  });
+});
+
 app.get("/api/health", async (_req, res) => {
   try {
     const [databaseResult, schemaResult] = await Promise.all([
