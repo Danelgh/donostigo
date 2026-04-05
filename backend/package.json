@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "db:bootstrap": "sh ./scripts/db-bootstrap.sh",
+    "db:verify": "sh ./scripts/db-verify.sh",
+    "smoke": "node ./scripts/smoke-test.mjs",
+    "release:check": "sh ./scripts/release-check.sh"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

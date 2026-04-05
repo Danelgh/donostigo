@@ -1,30 +1,61 @@
 # DonostiGo
 
-Proyecto base para el TFG de DAW: una plataforma web de descubrimiento y reservas para negocios locales de Donostia-San Sebastian.
+Plataforma web para descubrir negocios locales de Donostia-San Sebastian y gestionar distintas formas de interacción según el tipo de negocio: reservas, plazas, solicitudes manuales, bonos, listas y guías públicas.
 
-## Estructura
+## Stack
 
-- `frontend/`: cliente React con Vite
-- `backend/`: API REST con Node.js, Express y PostgreSQL
-- `database/schema.sql`: esquema inicial de base de datos y datos de ejemplo
+- `frontend/`: React + Vite
+- `backend/`: Node.js + Express
+- `database/schema.sql`: PostgreSQL con esquema completo y datos demo
+- `render.yaml`: blueprint para Render
 
-## MVP planteado
+## Estado actual del producto
 
-- Registro e inicio de sesion
-- Roles de usuario y negocio
-- Listado de negocios por categoria
-- Detalle de negocio
-- Reservas basicas
-- Panel de usuario
+DonostiGo ya no está planteado como un MVP de reservas simples. Ahora mismo incluye:
 
-## Puesta en marcha
+- autenticación con roles `user` y `business`
+- catálogo de negocios con filtros, ordenación y comparador rápido
+- fichas públicas con branding, horarios, FAQ y políticas
+- reservas por servicio con disponibilidad real por franjas
+- lista de espera y conversión de waitlist a reserva
+- solicitudes manuales para negocios `request`
+- bonos y packs con propuesta cerrada y flujo de aceptación
+- reseñas con respuesta pública del negocio
+- guardados, listas personalizadas y guías públicas
+- recomendaciones personalizadas
+- panel de negocio tipo backoffice con:
+  - branding del portal
+  - horarios y excepciones
+  - oferta por servicio
+  - inbox operativo
+  - métricas e insights
+
+## Estructura rápida
+
+```text
+backend/
+database/
+frontend/
+render.yaml
+```
+
+## Arranque local
 
 ### 1. Base de datos
 
-Crear una base de datos llamada `donostigo` en PostgreSQL y ejecutar:
+Crea una base PostgreSQL llamada `donostigo` y bootstrapéala con el esquema completo:
 
-```sql
-\i database/schema.sql
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm run db:bootstrap
+```
+
+El script usa `DATABASE_URL` del `.env` de backend. Por defecto el ejemplo apunta a:
+
+```text
+postgresql://danelgoni@localhost:5432/donostigo
 ```
 
 ### 2. Backend
@@ -32,7 +63,6 @@ Crear una base de datos llamada `donostigo` en PostgreSQL y ejecutar:
 ```bash
 cd backend
 cp .env.example .env
-# editar .env y asignar un JWT_SECRET propio antes de arrancar
 npm install
 npm run dev
 ```
@@ -46,53 +76,144 @@ npm install
 npm run dev
 ```
 
-## Endpoints iniciales
+## Scripts útiles de base de datos
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/businesses`
-- `GET /api/businesses/:id`
-- `POST /api/reservations`
-- `GET /api/reservations/my`
-
-## Credenciales demo tras ejecutar el seed
-
-- `surf@donostigo.local` / `Demo1234`
-- `ane@donostigo.local` / `Demo1234`
-
-## Despliegue recomendado en Render
-
-La forma mas comoda de compartir el proyecto como web publica es desplegarlo en Render:
-
-- `frontend/` como sitio estatico
-- `backend/` como servicio web
-- PostgreSQL como base de datos gestionada
-
-El repositorio ya incluye un archivo [`render.yaml`](./render.yaml) preparado para crear los tres servicios.
-
-### Pasos
-
-1. Sube el repositorio a GitHub y comprueba que los cambios estan actualizados.
-2. En Render, crea un nuevo servicio usando la opcion **Blueprint** y selecciona este repositorio.
-3. Espera a que se creen:
-   - `danelgh-donostigo-db`
-   - `danelgh-donostigo-api`
-   - `danelgh-donostigo-web`
-4. En la base de datos de Render, copia la **External Database URL**.
-5. Desde tu ordenador, carga el esquema y los datos demo:
+Desde `backend/`:
 
 ```bash
-psql "<EXTERNAL_DATABASE_URL>" -f database/schema.sql
+npm run db:bootstrap
 ```
 
-6. Abre la URL del frontend y comprueba que:
-   - el catalogo carga correctamente
-   - el login funciona
-   - las reservas y resenas responden bien
+Reaplica `database/schema.sql` completo. Importante:
 
-### Nota
+- borra y recrea tablas
+- vuelve a cargar seeds demo
+- sirve tanto para local como para remoto
 
-Si Render asigna una URL distinta a la prevista en `render.yaml`, actualiza estas variables en el panel de Render y vuelve a desplegar:
+También puedes pasar una URL explícita:
 
-- en el backend: `CLIENT_URL`
-- en el frontend: `VITE_API_URL`
+```bash
+npm run db:bootstrap -- "postgresql://usuario:pass@host:5432/donostigo"
+```
+
+Para verificar que la base remota o local tiene las tablas nuevas:
+
+```bash
+npm run db:verify
+```
+
+O bien:
+
+```bash
+npm run db:verify -- "postgresql://usuario:pass@host:5432/donostigo"
+```
+
+Si quieres una comprobación más completa antes de desplegar o entregar:
+
+```bash
+cd backend
+npm run release:check
+```
+
+Este comando encadena:
+
+- `build` del frontend
+- `db:verify`
+- `smoke` de la API
+
+## Health y smoke test
+
+La API ya expone un `health` con comprobación real de base de datos y esquema:
+
+```text
+GET /api/health
+```
+
+Si la API está levantada pero la base no tiene todavía el esquema esperado, responderá con error `503`.
+
+También tienes un smoke test básico para validar el proyecto de punta a punta sin tocar datos destructivos:
+
+```bash
+cd backend
+npm run smoke
+```
+
+Por defecto usa:
+
+```text
+http://127.0.0.1:4000/api
+```
+
+También puedes apuntarlo a otra URL:
+
+```bash
+SMOKE_BASE_URL=https://danelgh-donostigo-api.onrender.com/api npm run smoke
+```
+
+Este smoke verifica:
+
+- health
+- catálogo público
+- ficha pública
+- guías públicas
+- login cliente
+- actividad cliente
+- recomendaciones
+- login negocio
+- panel negocio
+- reservas del negocio
+
+## Credenciales demo
+
+- cliente: `ane@donostigo.local` / `Demo1234`
+- negocio: `surf@donostigo.local` / `Demo1234`
+
+## Despliegue en Render
+
+El repositorio ya incluye `render.yaml` con:
+
+- PostgreSQL gestionado
+- backend `danelgh-donostigo-api`
+- frontend estático `danelgh-donostigo-web`
+
+### Flujo recomendado
+
+1. Sube el repositorio actualizado a GitHub.
+2. En Render crea el proyecto con **Blueprint** usando `render.yaml`.
+3. Espera a que se creen la base, el backend y el frontend.
+4. Copia la **External Database URL** de Render.
+5. Desde tu equipo, ejecuta el bootstrap remoto:
+
+```bash
+cd backend
+npm run db:bootstrap -- "<EXTERNAL_DATABASE_URL>"
+```
+
+6. Comprueba que la base tiene el esquema actual:
+
+```bash
+cd backend
+npm run db:verify -- "<EXTERNAL_DATABASE_URL>"
+```
+
+7. Abre la app desplegada y prueba:
+   - login
+   - catálogo
+   - detalle
+   - reservas o solicitudes
+   - panel de negocio
+
+## Nota importante sobre producción demo
+
+`schema.sql` está pensado para entorno académico y de demostración:
+
+- recrea la base desde cero
+- vuelve a cargar datos demo
+- no usa migraciones incrementales
+
+Para el TFG esto es válido y práctico, pero conviene tratarlo como un **bootstrap controlado**, no como una estrategia de producción real.
+
+## URLs del proyecto
+
+- repositorio: [https://github.com/Danelgh/donostigo](https://github.com/Danelgh/donostigo)
+- app desplegada: [https://danelgh-donostigo-web.onrender.com](https://danelgh-donostigo-web.onrender.com)

@@ -112,6 +112,10 @@ export async function fetchBusinessById(id) {
   return request(`/businesses/${id}`);
 }
 
+export async function fetchRecommendedBusinesses() {
+  return request("/businesses/recommended");
+}
+
 export async function fetchMyBusinessProfile() {
   return request("/businesses/me");
 }
@@ -168,8 +172,38 @@ export async function createReservation(payload) {
   return request("/reservations", buildJsonRequest("POST", payload));
 }
 
+export async function fetchBusinessAvailability(businessId, filters = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (filters.date) {
+    searchParams.set("date", filters.date);
+  }
+
+  if (filters.people) {
+    searchParams.set("people", String(filters.people));
+  }
+
+  if (filters.serviceId) {
+    searchParams.set("serviceId", String(filters.serviceId));
+  }
+
+  const queryString = searchParams.toString();
+
+  return request(
+    `/reservations/businesses/${businessId}/availability${queryString ? `?${queryString}` : ""}`
+  );
+}
+
 export async function fetchMyReservations() {
   return request("/reservations/my");
+}
+
+export async function fetchMyWaitlistEntries() {
+  return request("/reservations/waitlist/my");
+}
+
+export async function fetchBusinessWaitlistEntries() {
+  return request("/reservations/waitlist/business");
 }
 
 export async function fetchBusinessReservations() {
@@ -180,6 +214,87 @@ export async function updateReservationStatus(reservationId, payload) {
   return request(`/reservations/${reservationId}/status`, buildJsonRequest("PATCH", payload));
 }
 
+export async function createBusinessServiceRequest(payload) {
+  return request("/requests", buildJsonRequest("POST", payload));
+}
+
+export async function fetchMyBusinessServiceRequests() {
+  return request("/requests/my");
+}
+
+export async function fetchBusinessServiceRequests() {
+  return request("/requests/business");
+}
+
+export async function updateBusinessServiceRequestStatus(requestId, payload) {
+  return request(`/requests/${requestId}/status`, buildJsonRequest("PATCH", payload));
+}
+
+export async function respondToBusinessServiceRequest(requestId, payload) {
+  return request(`/requests/${requestId}/customer-response`, buildJsonRequest("PATCH", payload));
+}
+
+export async function updateBusinessServiceRequestVoucherStatus(requestId, payload) {
+  return request(`/requests/${requestId}/voucher-status`, buildJsonRequest("PATCH", payload));
+}
+
+export async function joinReservationWaitlist(payload) {
+  return request("/reservations/waitlist", buildJsonRequest("POST", payload));
+}
+
+export async function updateWaitlistStatus(waitlistId, payload) {
+  return request(`/reservations/waitlist/${waitlistId}/status`, buildJsonRequest("PATCH", payload));
+}
+
 export async function createBusinessReview(businessId, payload) {
   return request(`/businesses/${businessId}/reviews`, buildJsonRequest("POST", payload));
+}
+
+export async function saveBusinessReviewResponse(businessId, reviewId, payload) {
+  return request(
+    `/businesses/${businessId}/reviews/${reviewId}/response`,
+    buildJsonRequest("POST", payload)
+  );
+}
+
+export async function fetchSavedLists() {
+  return request("/saved-lists");
+}
+
+export async function createSavedList(payload) {
+  return request("/saved-lists", buildJsonRequest("POST", payload));
+}
+
+export async function updateSavedList(listId, payload) {
+  return request(`/saved-lists/${listId}`, buildJsonRequest("PATCH", payload));
+}
+
+export async function deleteSavedList(listId) {
+  return request(`/saved-lists/${listId}`, {
+    method: "DELETE"
+  });
+}
+
+export async function fetchPublicSavedLists() {
+  return request("/saved-lists/public");
+}
+
+export async function fetchPublicSavedListBySlug(slug) {
+  return request(`/saved-lists/public/${slug}`);
+}
+
+export async function clonePublicSavedList(slug) {
+  return request(`/saved-lists/public/${slug}/clone`, {
+    method: "POST"
+  });
+}
+
+export async function addBusinessToSavedList(listId, payload) {
+  return request(`/saved-lists/${listId}/businesses`, buildJsonRequest("POST", payload));
+}
+
+export async function removeBusinessFromSavedList(listId, businessId) {
+  return request(`/saved-lists/${listId}/businesses/${businessId}`, {
+    method: "DELETE"
+  });
 }
